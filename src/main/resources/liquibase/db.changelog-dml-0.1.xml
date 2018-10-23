@@ -294,4 +294,16 @@
 			<column name="created_date" value="now()"/>
 		</insert>
 	</changeSet>
+	<changeSet author="Ari" id="dml-0.0-2" failOnError="true">
+		<insert tableName="oauth_client_details">
+			<column name="client_id" value="asdp-client" />
+			<column name="client_secret" value="asdp-secret" />
+			<column name="scope" value="read,write,trust" />
+			<column name="authorized_grant_types" value="password,authorization_code,refresh_token,implicit" />
+			<column name="scope" value="read,write,trust" />
+			<column name="access_token_validity" value="3600" />
+			<column name="refresh_token_validity" value="3600" />
+			<column name="autoapprove" value="true" />
+		</insert>
+	</changeSet>
 </databaseChangeLog>

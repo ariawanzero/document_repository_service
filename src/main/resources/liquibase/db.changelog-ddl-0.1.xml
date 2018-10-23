@@ -77,21 +77,51 @@
 			</column>
 			<column name="date_login" type="datetime" />
 		</createTable>
-		<createTable tableName="oauth_access_token">
-			<column name="authentication_id" type="VARCHAR(255)">
-				<constraints primaryKey="true" nullable="false" />
+		<createTable tableName="oauth_client_details">
+			<column name="client_id" type="VARCHAR(255)">
+				<constraints primaryKey="true" />
 			</column>
+			<column name="resource_ids" type="VARCHAR(255)" />
+			<column name="client_secret" type="VARCHAR(255)" />
+			<column name="scope" type="VARCHAR(255)" />
+			<column name="authorized_grant_types" type="VARCHAR(255)" />
+			<column name="access_token_validity" type="INTEGER" />
+			<column name="refresh_token_validity" type="INTEGER" />
+			<column name="additional_information" type="VARCHAR(255)" />
+			<column name="autoapprove" type="VARCHAR(255)" />
+		</createTable>
+		<createTable tableName="oauth_client_token">
 			<column name="token_id" type="VARCHAR(255)" />
-			<column name="client_id" type="VARCHAR(255)" />
-			<column name="user_name" type="VARCHAR(255)" />
-			<column name="refresh_token" type="VARCHAR(255)" />
 			<column name="token" type="MEDIUMBLOB" />
+			<column name="authentication_id" type="VARCHAR(255)" />
+			<column name="user_name" type="VARCHAR(255)" />
+			<column name="client_id" type="VARCHAR(255)" />
+		</createTable>
+		<createTable tableName="oauth_access_token">
+			<column name="token_id" type="VARCHAR(255)" />
+			<column name="token" type="MEDIUMBLOB" />
+			<column name="authentication_id" type="VARCHAR(255)" />
+			<column name="user_name" type="VARCHAR(255)" />
+			<column name="client_id" type="VARCHAR(255)" />
 			<column name="authentication" type="MEDIUMBLOB" />
+			<column name="refresh_token" type="VARCHAR(255)" />
 		</createTable>
 		<createTable tableName="oauth_refresh_token">
 			<column name="token_id" type="VARCHAR(255)" />
 			<column name="token" type="MEDIUMBLOB" />
 			<column name="authentication" type="MEDIUMBLOB" />
+		</createTable>
+		<createTable tableName="oauth_code">
+			<column name="code" type="VARCHAR(255)" />
+			<column name="authentication" type="MEDIUMBLOB" />
+		</createTable>
+		<createTable tableName="oauth_approvals">
+			<column name="userId" type="VARCHAR(255)" />
+			<column name="clientId" type="VARCHAR(255)" />
+			<column name="scope" type="VARCHAR(255)" />
+			<column name="status" type="VARCHAR(255)" />
+			<column name="expiresAt" type="DATETIME" />
+			<column name="lastModifiedAt" type="DATETIME" />			
 		</createTable>
 	</changeSet>
 </databaseChangeLog>
