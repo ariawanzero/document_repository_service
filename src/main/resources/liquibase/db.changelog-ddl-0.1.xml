@@ -1,0 +1,97 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+	<changeSet author="SEPTA" id="0.0-1" failOnError="true">
+		<createTable tableName="sys_user_role">
+			<column name="user_role_code" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="role_name" type="VARCHAR(100)" />
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="sys_response_mapping">
+			<column name="response_code" type="VARCHAR(200)" />
+			<column name="response_desc" type="VARCHAR(200)" />
+		</createTable>
+		<createTable tableName="sys_user">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="user_role" type="VARCHAR(100)">
+				<constraints nullable="false" foreignKeyName="fk_sys_user_role" references="sys_user_role(user_role_code)" />
+			</column>
+			<column name="username" type="VARCHAR(500)" />
+			<column name="name" type="VARCHAR(255)" />
+			<column name="no_hp" type="VARCHAR(500)" />
+			<column name="alamat" type="VARCHAR(500)" />
+			<column name="jabatan" type="VARCHAR(100)" />
+			<column name="divisi" type="VARCHAR(100)" />
+			<column name="unit" type="VARCHAR(100)" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="expired_date" type="datetime" />
+			<column name="password" type="VARCHAR(100)" />
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="sys_menu">
+			<column name="menu_code" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="menu_name" type="VARCHAR(100)" />
+			<column name="url" type="VARCHAR(500)" />
+			<column name="parent" type="VARCHAR(500)" />
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="sys_menu_role">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="user_role" type="VARCHAR(100)">
+				<constraints nullable="false" foreignKeyName="fk_sys_user_role_menu" references="sys_user_role(user_role_code)" />
+			</column>
+			<column name="menu" type="VARCHAR(100)">
+				<constraints nullable="false" foreignKeyName="fk_sys_menu" references="sys_menu(menu_code)" />
+			</column>
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="sys_history_login">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="user" type="VARCHAR(100)">
+				<constraints nullable="false" foreignKeyName="fk_sys_user" references="sys_user(id)" />
+			</column>
+			<column name="date_login" type="datetime" />
+		</createTable>
+		<createTable tableName="oauth_access_token">
+			<column name="authentication_id" type="VARCHAR(255)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="token_id" type="VARCHAR(255)" />
+			<column name="client_id" type="VARCHAR(255)" />
+			<column name="user_name" type="VARCHAR(255)" />
+			<column name="refresh_token" type="VARCHAR(255)" />
+			<column name="token" type="MEDIUMBLOB" />
+			<column name="authentication" type="MEDIUMBLOB" />
+		</createTable>
+		<createTable tableName="oauth_refresh_token">
+			<column name="token_id" type="VARCHAR(255)" />
+			<column name="token" type="MEDIUMBLOB" />
+			<column name="authentication" type="MEDIUMBLOB" />
+		</createTable>
+	</changeSet>
+</databaseChangeLog>
