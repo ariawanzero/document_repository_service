@@ -7,12 +7,22 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
+import com.asdp.service.UserService;
+import com.asdp.service.UserServiceImpl;
+
+@EnableResourceServer
 @SpringBootApplication
 public class Application {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
+	}
+	
+	@Bean
+	public UserService userService() {
+		return new UserServiceImpl();
 	}
 	
 	@Bean
@@ -28,4 +38,6 @@ public class Application {
 
         };
     }
+	
+	
 }

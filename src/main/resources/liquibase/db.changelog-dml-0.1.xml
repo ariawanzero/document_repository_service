@@ -4,8 +4,16 @@
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 	<changeSet author="SEPTA" id="dml-0.0-1" failOnError="true">
 		<insert tableName="sys_user_role">
+			<column name="user_role_code" value="0" />
+			<column name="role_name" value="SUPERADMIN" />
+			<column name="created_by" value="system" />
+			<column name="created_date" value="now()" />
+			<column name="modified_by" value="system" />
+			<column name="modified_date" value="now()" />
+		</insert>
+		<insert tableName="sys_user_role">
 			<column name="user_role_code" value="1" />
-			<column name="role_name" value="superadmin" />
+			<column name="role_name" value="ADMIN" />
 			<column name="created_by" value="system" />
 			<column name="created_date" value="now()" />
 			<column name="modified_by" value="system" />
@@ -13,7 +21,7 @@
 		</insert>
 		<insert tableName="sys_user_role">
 			<column name="user_role_code" value="2" />
-			<column name="role_name" value="admin" />
+			<column name="role_name" value="USER" />
 			<column name="created_by" value="system" />
 			<column name="created_date" value="now()" />
 			<column name="modified_by" value="system" />
@@ -21,15 +29,7 @@
 		</insert>
 		<insert tableName="sys_user_role">
 			<column name="user_role_code" value="3" />
-			<column name="role_name" value="user" />
-			<column name="created_by" value="system" />
-			<column name="created_date" value="now()" />
-			<column name="modified_by" value="system" />
-			<column name="modified_date" value="now()" />
-		</insert>
-		<insert tableName="sys_user_role">
-			<column name="user_role_code" value="4" />
-			<column name="role_name" value="viewer" />
+			<column name="role_name" value="VIEWER" />
 			<column name="created_by" value="system" />
 			<column name="created_date" value="now()" />
 			<column name="modified_by" value="system" />
@@ -37,7 +37,7 @@
 		</insert>
 		<insert tableName="sys_user">
 			<column name="id" value="1001"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="username" value="superuser"/>
 			<column name="name" value="superuser"/>
 			<column name="valid" value="1"/>
@@ -113,14 +113,14 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="1"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="LISTUSER"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="2"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="LISTUSER"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -128,14 +128,14 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="3"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="HISTORYUSER"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="4"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="HISTORYUSER"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -143,28 +143,28 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="5"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="LISTDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="6"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="LISTDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="7"/>
-			<column name="user_role" value="3"/>
+			<column name="user_role" value="2"/>
 			<column name="menu" value="LISTDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="8"/>
-			<column name="user_role" value="4"/>
+			<column name="user_role" value="3"/>
 			<column name="menu" value="LISTDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -172,21 +172,21 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="9"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="PENDINGAPPROVAL"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="10"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="PENDINGAPPROVAL"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="11"/>
-			<column name="user_role" value="3"/>
+			<column name="user_role" value="2"/>
 			<column name="menu" value="PENDINGAPPROVAL"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -194,14 +194,14 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="12"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="HISTORYDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="13"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="HISTORYDOCUMENT"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -209,28 +209,28 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="14"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="MODULELEARNING"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="15"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="MODULELEARNING"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="16"/>
-			<column name="user_role" value="3"/>
+			<column name="user_role" value="2"/>
 			<column name="menu" value="MODULELEARNING"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="17"/>
-			<column name="user_role" value="4"/>
+			<column name="user_role" value="3"/>
 			<column name="menu" value="MODULELEARNING"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -238,28 +238,28 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="18"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="LISTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="19"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="LISTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="20"/>
-			<column name="user_role" value="3"/>
+			<column name="user_role" value="2"/>
 			<column name="menu" value="LISTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="21"/>
-			<column name="user_role" value="4"/>
+			<column name="user_role" value="3"/>
 			<column name="menu" value="LISTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -267,28 +267,28 @@
 		
 		<insert tableName="sys_menu_role">
 			<column name="id" value="22"/>
-			<column name="user_role" value="1"/>
+			<column name="user_role" value="0"/>
 			<column name="menu" value="RESULTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="23"/>
-			<column name="user_role" value="2"/>
+			<column name="user_role" value="1"/>
 			<column name="menu" value="RESULTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="24"/>
-			<column name="user_role" value="3"/>
+			<column name="user_role" value="2"/>
 			<column name="menu" value="RESULTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
 		</insert>
 		<insert tableName="sys_menu_role">
 			<column name="id" value="25"/>
-			<column name="user_role" value="4"/>
+			<column name="user_role" value="3"/>
 			<column name="menu" value="RESULTQUIZ"/>
 			<column name="created_by" value="system"/>
 			<column name="created_date" value="now()"/>
@@ -297,7 +297,7 @@
 	<changeSet author="Ari" id="dml-0.0-2" failOnError="true">
 		<insert tableName="oauth_client_details">
 			<column name="client_id" value="asdp-client" />
-			<column name="client_secret" value="asdp-secret" />
+			<column name="client_secret" value="$2a$04$LZ17fEDigjYYvXhB5BkbGOw1BjiWHXbd3.q/gfeZ5y9grYocGr0be" />
 			<column name="scope" value="read,write,trust" />
 			<column name="authorized_grant_types" value="password,authorization_code,refresh_token,implicit" />
 			<column name="scope" value="read,write,trust" />
