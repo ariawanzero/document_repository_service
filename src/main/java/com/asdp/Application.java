@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
+import com.asdp.service.MenuService;
+import com.asdp.service.MenuServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
 
@@ -23,6 +25,11 @@ public class Application {
 	@Bean
 	public UserService userService() {
 		return new UserServiceImpl();
+	}
+	
+	@Bean
+	public MenuService menuDaoService() {
+		return new MenuServiceImpl();
 	}
 	
 	@Bean
