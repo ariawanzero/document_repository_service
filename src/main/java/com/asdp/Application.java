@@ -11,8 +11,16 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 
 import com.asdp.service.MenuService;
 import com.asdp.service.MenuServiceImpl;
+import com.asdp.service.ResponseMappingDaoService;
+import com.asdp.service.ResponseMappingDaoServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
+import com.asdp.util.CommonResponseGenerator;
+import com.asdp.util.RequestContext;
+import com.asdp.util.ResponseMapping;
+import com.asdp.util.ResponseMappingDBImpl;
+
+
 
 @EnableResourceServer
 @SpringBootApplication
@@ -22,6 +30,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 	
+	/* SERVICE */
 	@Bean
 	public UserService userService() {
 		return new UserServiceImpl();
@@ -32,6 +41,27 @@ public class Application {
 		return new MenuServiceImpl();
 	}
 	
+	/* UTIL */
+	@Bean
+	public CommonResponseGenerator commonResponseGenerator() {
+		return new CommonResponseGenerator();
+	}
+    
+    @Bean
+    public RequestContext requestContext() {
+    	return new RequestContext();
+    }
+    
+    @Bean
+   	public ResponseMappingDaoService responseMappingDaoService() {
+   		return new ResponseMappingDaoServiceImpl();
+   	}
+       
+    @Bean
+   	public ResponseMapping responseMapping() {
+   		return new ResponseMappingDBImpl(this.responseMappingDaoService());
+   	}
+    
 	@Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
