@@ -2,7 +2,7 @@ package com.asdp.request;
 
 import java.util.Date;
 
-public class HistoryUserRequest {
+public class HistoryLoginRequest {
 	private String username;
 	private Date startDate;
 	private Date endDate;
