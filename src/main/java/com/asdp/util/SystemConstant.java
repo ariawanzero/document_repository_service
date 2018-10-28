@@ -249,6 +249,7 @@ public class SystemConstant {
 
 	public static final class UploadConstants {
 
+		public static final String PATH = "/elearning/";
 		public static final String VALID_SUFFIX 	= "-valid";
 		public static final String INVALID_SUFFIX	= "-invalid";
 		public static final String PROCESSED_SUFFIX 	= "-processed";
