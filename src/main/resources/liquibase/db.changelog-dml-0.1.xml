@@ -344,4 +344,15 @@
 			</column>
 		</insert>
 	</changeSet>
+	<changeSet author="Ari" id="dml-0.0-6" failOnError="true">
+		<update tableName="sys_menu">
+			<column name="url" value="quiz"/>
+			<where>menu_code='LISTQUIZ' </where>
+		 </update>
+		 <update tableName="sys_menu">
+			<column name="menu_name" value="Result Quiz"/>
+			<column name="url" value="quiz/result"/>
+			<where>menu_code='RESULTQUIZ' </where>
+		 </update>
+	</changeSet>
 </databaseChangeLog>
