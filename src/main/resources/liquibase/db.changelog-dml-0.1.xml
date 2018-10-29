@@ -326,4 +326,22 @@
 			<where>menu_code='RESULTQUIZ' </where>
 		 </update>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-4" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="NEWMEMBER" />
+			<column name="subject" value="welcome to your new infoASDP Account" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>Your account already created!<br/>Username : %s<br/>Password : %s<br/>Please change your password for security privacy<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-5" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="CHANGEPASSWORD" />
+			<column name="subject" value="Your password infoASDP has been changed" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>Your password has been changed!<br/>Please do not reply to this email with your password. We will never ask for your password, and we strongly discourage you from sharing it with anyone.<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
 </databaseChangeLog>
