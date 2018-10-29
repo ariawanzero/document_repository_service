@@ -126,4 +126,13 @@
 			<column name="lastModifiedAt" type="DATETIME" />			
 		</createTable>
 	</changeSet>
+	<changeSet author="Septa" id="0.0-3" failOnError="true">
+		<createTable tableName="sys_email">
+			<column name="email_code" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="subject" type="VARCHAR(100)" />
+			<column name="body_message" type="MEDIUMTEXT" />
+		</createTable>
+	</changeSet>
 </databaseChangeLog>

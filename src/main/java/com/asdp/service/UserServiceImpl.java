@@ -26,9 +26,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.asdp.entity.EmailEntity;
 import com.asdp.entity.HistoryLoginEntity;
 import com.asdp.entity.UserEntity;
 import com.asdp.entity.UserRoleEntity;
+import com.asdp.repository.EmailRepository;
 import com.asdp.repository.HistoryLoginRepository;
 import com.asdp.repository.UserRepository;
 import com.asdp.request.ChangePasswordRequest;
@@ -40,6 +42,7 @@ import com.asdp.util.CommonResponse;
 import com.asdp.util.CommonResponseGenerator;
 import com.asdp.util.CommonResponsePaging;
 import com.asdp.util.DateTimeFunction;
+import com.asdp.util.EmailUtils;
 import com.asdp.util.JsonFilter;
 import com.asdp.util.JsonUtil;
 import com.asdp.util.PasswordUtils;
@@ -62,6 +65,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	
 	@Autowired
 	private HistoryLoginRepository hisRepo;
+	
+	@Autowired
+	private EmailRepository emailRepo;
 	
 	@Autowired
 	private CommonPageUtil pageUtil;
@@ -225,7 +231,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 			
 			BeanUtils.copyProperties(request, toUpdate);
 		}else{
-			toUpdate.setPassword(StringFunction.randomAlphaNumeric(7));
+			String password = StringFunction.randomAlphaNumeric(7);
+			toUpdate.setPassword(PasswordUtils.encryptPassword(password));
+			Optional<EmailEntity> email = emailRepo.findById("NEWMEMBER");
+			EmailUtils.sendEmail(toUpdate.getUsername(), String.format(email.get().getBodyMessage(), toUpdate.getName(), toUpdate.getUsername(), password), email.get().getSubject());
 		}
 		userRepo.save(toUpdate);
 		
@@ -294,6 +303,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		user.setPassword(PasswordUtils.encryptPassword(request.getNewPassword()));
 		userRepo.save(user);
+		
+		Optional<EmailEntity> email = emailRepo.findById("CHANGEPASSWORD");
+		EmailUtils.sendEmail(user.getUsername(), String.format(email.get().getBodyMessage(), user.getName()), email.get().getSubject());
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
