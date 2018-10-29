@@ -306,4 +306,24 @@
 			<column name="autoapprove" value="true" />
 		</insert>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-3" failOnError="true">
+		 <update tableName="sys_menu">
+			<column name="url" value="user/history"/>
+			<where>menu_code='HISTORYUSER' </where>
+		 </update>
+		 <update tableName="sys_menu">
+			<column name="menu_name" value="Materi Quiz"/>
+			<column name="url" value="materi"/>
+			<where>menu_code='MODULELEARNING' </where>
+		 </update>
+		 <update tableName="sys_menu">
+			<column name="url" value="materi/quiz"/>
+			<where>menu_code='LISTQUIZ' </where>
+		 </update>
+		 <update tableName="sys_menu">
+			<column name="menu_name" value="Result Quiz"/>
+			<column name="url" value="materi/result"/>
+			<where>menu_code='RESULTQUIZ' </where>
+		 </update>
+	</changeSet>
 </databaseChangeLog>
