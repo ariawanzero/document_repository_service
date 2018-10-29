@@ -317,12 +317,12 @@
 			<where>menu_code='MODULELEARNING' </where>
 		 </update>
 		 <update tableName="sys_menu">
-			<column name="url" value="materi/quiz"/>
+			<column name="url" value="quiz"/>
 			<where>menu_code='LISTQUIZ' </where>
 		 </update>
 		 <update tableName="sys_menu">
 			<column name="menu_name" value="Result Quiz"/>
-			<column name="url" value="materi/result"/>
+			<column name="url" value="quiz/result"/>
 			<where>menu_code='RESULTQUIZ' </where>
 		 </update>
 	</changeSet>
@@ -343,16 +343,5 @@
 				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>Your password has been changed!<br/>Please do not reply to this email with your password. We will never ask for your password, and we strongly discourage you from sharing it with anyone.<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
 			</column>
 		</insert>
-	</changeSet>
-	<changeSet author="Ari" id="dml-0.0-6" failOnError="true">
-		<update tableName="sys_menu">
-			<column name="url" value="quiz"/>
-			<where>menu_code='LISTQUIZ' </where>
-		 </update>
-		 <update tableName="sys_menu">
-			<column name="menu_name" value="Result Quiz"/>
-			<column name="url" value="quiz/result"/>
-			<where>menu_code='RESULTQUIZ' </where>
-		 </update>
 	</changeSet>
 </databaseChangeLog>
