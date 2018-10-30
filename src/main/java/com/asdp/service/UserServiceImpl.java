@@ -241,8 +241,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 					SystemConstant.WILDCARD + userName.toLowerCase() + SystemConstant.WILDCARD));
 			
 			if(id != null) {
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(UserEntity.Constant.ID_FIELD)),
-						SystemConstant.WILDCARD + id.toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.notEqual(criteriaBuilder.lower(root.<String>get(UserEntity.Constant.ID_FIELD)), id.toLowerCase()));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
