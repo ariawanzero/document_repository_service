@@ -92,7 +92,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				throw new UsernameNotFoundException("Username has been Expired.");
 			}
 		}
+		this.saveHistoryLogin(user);
 		return new User(user.getUsername(), user.getPassword(), getAuthority(user.getUserRole().getRoleName()));
+	}
+	
+	private void saveHistoryLogin(UserEntity user){
+		HistoryLoginEntity hisLogin = new HistoryLoginEntity();
+		hisLogin.setUser(user);
+		hisLogin.setDateLogin(new Date());
+		hisRepo.save(hisLogin);
 	}
 	
 	private List<SimpleGrantedAuthority> getAuthority(String role) {
@@ -250,8 +258,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 					SystemConstant.WILDCARD + userName.toLowerCase() + SystemConstant.WILDCARD));
 			
 			if(id != null) {
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(UserEntity.Constant.ID_FIELD)),
-						SystemConstant.WILDCARD + id.toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.notEqual(criteriaBuilder.lower(root.<String>get(UserEntity.Constant.ID_FIELD)), id.toLowerCase()));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
