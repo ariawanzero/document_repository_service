@@ -92,7 +92,15 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				throw new UsernameNotFoundException("Username has been Expired.");
 			}
 		}
+		this.saveHistoryLogin(user);
 		return new User(user.getUsername(), user.getPassword(), getAuthority(user.getUserRole().getRoleName()));
+	}
+	
+	private void saveHistoryLogin(UserEntity user){
+		HistoryLoginEntity hisLogin = new HistoryLoginEntity();
+		hisLogin.setUser(user);
+		hisLogin.setDateLogin(new Date());
+		hisRepo.save(hisLogin);
 	}
 	
 	private List<SimpleGrantedAuthority> getAuthority(String role) {
