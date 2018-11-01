@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.asdp.entity.MateriQuizEntity;
-import com.asdp.request.MateriQuizSaveRequest;
 import com.asdp.request.MateriQuizSearchRequest;
 import com.asdp.service.MateriQuizService;
 import com.asdp.util.SystemRestConstant;
@@ -24,17 +23,6 @@ public class MateriQuizController {
 	
 	@Autowired
 	private MateriQuizService materiQuizService;
-	
-	@PostMapping(SystemRestConstant.MateriQuizConstant.SAVE_MATERI_QUIZ_ADDR)
-	public String saveMateriQuiz(@RequestParam("id") String id,@RequestParam("nameFile") String nameFile, @RequestParam("file") MultipartFile[] file) throws Exception {
-		MateriQuizSaveRequest request = new MateriQuizSaveRequest();
-		if(!id.equals("")) {
-			request.setId(id);
-		}
-		request.setName(nameFile);
-		request.setFile(file);
-		return materiQuizService.save(request);
-	}
 	
 	@GetMapping(SystemRestConstant.MateriQuizConstant.DOWNLOAD_FILE_ADDR)
 	public ResponseEntity<Resource> downloadMateriQuiz(@RequestParam(name = "name", defaultValue = "", required = true) String name) throws Exception {		
@@ -52,5 +40,15 @@ public class MateriQuizController {
 	@PostMapping(SystemRestConstant.MateriQuizConstant.FIND_MATERI_QUIZ_DETAIL_ADDR)
 	public String findUserDatail(@RequestBody MateriQuizEntity request) throws Exception {
 		return materiQuizService.findOneById(request.getId());
+	}
+	
+	@PostMapping(SystemRestConstant.MateriQuizConstant.SAVE_MATERI_QUIZ_HEADER_ADDR)
+	public String saveMateriHeader(@RequestBody MateriQuizEntity request) throws Exception {
+		return materiQuizService.saveHeader(request);
+	}
+	
+	@PostMapping(SystemRestConstant.MateriQuizConstant.SAVE_MATERI_QUIZ_ADDR)
+	public String saveMateriQuiz(@RequestParam("id") String id, @RequestParam("file") MultipartFile file) throws Exception {
+		return materiQuizService.save(file, id);
 	}
 }

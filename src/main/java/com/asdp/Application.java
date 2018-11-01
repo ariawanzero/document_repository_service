@@ -27,12 +27,11 @@ import com.asdp.util.CommonResponseGenerator;
 import com.asdp.util.RequestContext;
 import com.asdp.util.ResponseMapping;
 import com.asdp.util.ResponseMappingDBImpl;
-
-
+import com.asdp.util.SystemConstant.UploadConstants;
 
 @EnableResourceServer
 @SpringBootApplication
-public class Application {
+public class Application implements CommandLineRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -69,6 +68,11 @@ public class Application {
 		return new QuestionServiceImpl();
 	}
 	
+	@Bean
+	public StorageService storageService() {
+		return new StorageServiceImpl();
+	}
+	
 	/* UTIL */
 	@Bean
 	public CommonResponseGenerator commonResponseGenerator() {
@@ -103,6 +107,15 @@ public class Application {
 
         };
     }
+	
+	@Resource
+	StorageService storageService;
+
+	@Override
+	public void run(String... args) throws Exception {
+		Path rootLocation = Paths.get(UploadConstants.PATH);
+		if(Files.notExists(rootLocation)) storageService.init();
+	}
 	
 	
 }
