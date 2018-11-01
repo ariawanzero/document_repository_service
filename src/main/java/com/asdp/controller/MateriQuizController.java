@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.asdp.entity.MateriQuizEntity;
 import com.asdp.request.MateriQuizSaveRequest;
@@ -25,8 +26,14 @@ public class MateriQuizController {
 	private MateriQuizService materiQuizService;
 	
 	@PostMapping(SystemRestConstant.MateriQuizConstant.SAVE_MATERI_QUIZ_ADDR)
-	public String saveMateriQuiz(@RequestBody MateriQuizSaveRequest saveRequest) throws Exception {		
-		return materiQuizService.save(saveRequest);
+	public String saveMateriQuiz(@RequestParam("id") String id,@RequestParam("nameFile") String nameFile, @RequestParam("file") MultipartFile[] file) throws Exception {
+		MateriQuizSaveRequest request = new MateriQuizSaveRequest();
+		if(!id.equals("")) {
+			request.setId(id);
+		}
+		request.setName(nameFile);
+		request.setFile(file);
+		return materiQuizService.save(request);
 	}
 	
 	@GetMapping(SystemRestConstant.MateriQuizConstant.DOWNLOAD_FILE_ADDR)

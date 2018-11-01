@@ -1,5 +1,6 @@
 package com.asdp.service;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,6 +43,8 @@ import com.asdp.util.SystemConstant.UploadConstants;
 import com.asdp.util.UserException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import liquibase.util.file.FilenameUtils;
+
 public class MateriQuizServiceImpl implements MateriQuizService{
 
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -58,6 +61,7 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 	
 	@Override
 	public String save(MateriQuizSaveRequest request) throws Exception {
+		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = authentication.getPrincipal();
 		UserEntity users = new UserEntity();
@@ -69,20 +73,31 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		if (isExistMateriByMateriName(request.getName(), request.getId())) {
 			throw new UserException("400", "Materi with that Name already exists !");
 		}
-		MateriQuizEntity materi = new MateriQuizEntity();
-		materi.setName(request.getName());
 		
 		List<String> fileName = new ArrayList<>();
-		fileName.add(request.getFile().getOriginalFilename());
 		
-		materi.setNameFileJson(JsonUtil.generateJson(fileName));
-		materi.setCreatedBy(users.getUsername());
+		
 		try {
-			Files.createDirectory(rootLocation);
-			Files.copy(request.getFile().getInputStream(), this.rootLocation.resolve(request.getFile().getOriginalFilename()));
+			File directory = new File(String.valueOf(rootLocation));
+			if(!directory.exists()) {
+				Files.createDirectory(rootLocation);
+			}
+			int count = 1;
+			for(int i =0; i<request.getFile().length; i++) {
+				count = count + i;
+				fileName.add(request.getFile()[i].getOriginalFilename().replace
+						(request.getFile()[i].getOriginalFilename(), request.getName().concat("-").concat(String.valueOf(count)).concat(".").concat(FilenameUtils.getExtension(request.getFile()[i].getOriginalFilename()))));
+				Files.copy(request.getFile()[i].getInputStream(), this.rootLocation.resolve(request.getFile()[i].getOriginalFilename().
+						replace(request.getFile()[i].getOriginalFilename(), request.getName().concat("-").concat(String.valueOf(count)).concat(".").concat(FilenameUtils.getExtension(request.getFile()[i].getOriginalFilename())))));
+			}
 		} catch (Exception e) {
 			throw new UserException("400", "Fail Transfer File to Server !");
 		}
+
+		MateriQuizEntity materi = new MateriQuizEntity();
+		materi.setName(request.getName());
+		materi.setNameFileJson(JsonUtil.generateJson(fileName));
+		materi.setCreatedBy(users.getUsername());
 		materiQuizRepo.save(materi);
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
@@ -146,8 +161,8 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		Specification<MateriQuizEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
 			list.add(criteriaBuilder.equal(root.<Integer>get(MateriQuizEntity.Constant.VALID_FIELD), SystemConstant.ValidFlag.VALID));
-			list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(MateriQuizEntity.Constant.NAME_FIELD)),
-					SystemConstant.WILDCARD + name.toLowerCase() + SystemConstant.WILDCARD));
+			list.add(criteriaBuilder.equal(criteriaBuilder.lower(root.<String>get(MateriQuizEntity.Constant.NAME_FIELD)),
+					name.toLowerCase()));
 			
 			if(id != null) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(MateriQuizEntity.Constant.ID_FIELD)),

@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MateriQuizSaveRequest {
 	private String id;
 	private String name;
-	private MultipartFile file;
+	private MultipartFile[] file;
 	
 	public String getId() {
 		return id;
@@ -19,10 +19,10 @@ public class MateriQuizSaveRequest {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public MultipartFile getFile() {
+	public MultipartFile[] getFile() {
 		return file;
 	}
-	public void setFile(MultipartFile file) {
+	public void setFile(MultipartFile[] file) {
 		this.file = file;
 	}
 }
