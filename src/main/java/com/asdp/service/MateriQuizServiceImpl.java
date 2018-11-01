@@ -1,11 +1,10 @@
 package com.asdp.service;
 
-import java.io.File;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,11 +23,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.asdp.entity.MateriQuizEntity;
 import com.asdp.entity.UserEntity;
 import com.asdp.repository.MateriQuizRepository;
-import com.asdp.request.MateriQuizSaveRequest;
 import com.asdp.request.MateriQuizSearchRequest;
 import com.asdp.util.CommonPageUtil;
 import com.asdp.util.CommonPaging;
@@ -59,46 +58,45 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 	@Autowired
 	private CommonPageUtil pageUtil;
 	
+	@Autowired
+	StorageService storageService;
+	
+	@SuppressWarnings("unchecked")
 	@Override
-	public String save(MateriQuizSaveRequest request) throws Exception {
-		
+	public String save(MultipartFile file, String id) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object principal = authentication.getPrincipal();
 		UserEntity users = new UserEntity();
 		BeanUtils.copyProperties(principal, users);
 		
-		if (request == null || StringFunction.isEmpty(request.getName())) {
-			throw new UserException("400", "Materi Name is mandatory !");
-		}
-		if (isExistMateriByMateriName(request.getName(), request.getId())) {
-			throw new UserException("400", "Materi with that Name already exists !");
-		}
-		
+		Optional<MateriQuizEntity> en = materiQuizRepo.findById(id);
 		List<String> fileName = new ArrayList<>();
 		
-		
-		try {
-			File directory = new File(String.valueOf(rootLocation));
-			if(!directory.exists()) {
-				Files.createDirectory(rootLocation);
+		if(en.get() != null) {
+			if(en.get().getNameFileJson() != null) {
+				fileName = JsonUtil.parseJson(en.get().getNameFileJson(), ArrayList.class);
 			}
-			int count = 1;
-			for(int i =0; i<request.getFile().length; i++) {
-				count = count + i;
-				fileName.add(request.getFile()[i].getOriginalFilename().replace
-						(request.getFile()[i].getOriginalFilename(), request.getName().concat("-").concat(String.valueOf(count)).concat(".").concat(FilenameUtils.getExtension(request.getFile()[i].getOriginalFilename()))));
-				Files.copy(request.getFile()[i].getInputStream(), this.rootLocation.resolve(request.getFile()[i].getOriginalFilename().
-						replace(request.getFile()[i].getOriginalFilename(), request.getName().concat("-").concat(String.valueOf(count)).concat(".").concat(FilenameUtils.getExtension(request.getFile()[i].getOriginalFilename())))));
+			
+			try {
+				String name = en.get().getName().concat("-")
+												.concat(String.valueOf(fileName.size() + 1))
+												.concat(".")
+												.concat(FilenameUtils.getExtension(file.getOriginalFilename()));
+				fileName.add(name);
+				storageService.store(file, name);
+			} catch (Exception e) {
+				throw new UserException("400", "Fail Transfer File to Server !");
 			}
-		} catch (Exception e) {
-			throw new UserException("400", "Fail Transfer File to Server !");
+			
+			MateriQuizEntity materi = en.get();
+			materi.setNameFileJson(JsonUtil.generateJson(fileName));
+			materi.setModifiedBy(users.getUsername());
+			materi.setModifiedDate(new Date());
+			materiQuizRepo.save(materi);
+		} else {
+			throw new UserException("400", "Data not Exists");
 		}
-
-		MateriQuizEntity materi = new MateriQuizEntity();
-		materi.setName(request.getName());
-		materi.setNameFileJson(JsonUtil.generateJson(fileName));
-		materi.setCreatedBy(users.getUsername());
-		materiQuizRepo.save(materi);
+		
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
@@ -139,10 +137,12 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		Page<MateriQuizEntity> paging = materiQuizRepo.findAll(spec, pageable);
 		
 		paging.getContent().stream().map(materi -> {
-			try {
-				materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
-			} catch (Exception e) {
-				e.printStackTrace();
+			if(materi.getNameFile() != null) {
+				try {
+					materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			return materi;
 		}).collect(Collectors.toList());
@@ -182,7 +182,9 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		
 		if (materi.get() == null) throw new UserException("400", "User not found");
 		
-		materi.get().setNameFile(JsonUtil.parseJson(materi.get().getNameFileJson(), ArrayList.class));
+		if(materi.get().getNameFileJson() != null) {
+			materi.get().setNameFile(JsonUtil.parseJson(materi.get().getNameFileJson(), ArrayList.class));
+		}
 
 		CommonResponse<MateriQuizEntity> response = new CommonResponse<>(materi.get());
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
@@ -190,6 +192,31 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 				new JsonFilter(MateriQuizEntity.Constant.JSON_FILTER, MateriQuizEntity.Constant.NAME_FILE_JSON_FIELD));
 
 		return writter.writeValueAsString(response);
+	}
+
+	@Override
+	public String saveHeader(MateriQuizEntity request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		
+		if (request == null || StringFunction.isEmpty(request.getName())) {
+			throw new UserException("400", "Materi Name is mandatory !");
+		}
+		if (isExistMateriByMateriName(request.getName(), request.getId())) {
+			throw new UserException("400", "Materi with that Name already exists !");
+		}
+		
+		MateriQuizEntity materi = new MateriQuizEntity();
+		materi.setName(request.getName());
+		materi.setCreatedBy(users.getUsername());
+		materi.setCreatedDate(new Date());
+		materiQuizRepo.save(materi);
+		materiQuizRepo.flush();
+		
+		CommonResponse<String> response = comGen.generateCommonResponse(materi.getId());
+		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 
 }

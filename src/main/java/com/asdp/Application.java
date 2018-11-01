@@ -1,6 +1,11 @@
 package com.asdp;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+
+import javax.annotation.Resource;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -15,18 +20,19 @@ import com.asdp.service.MenuService;
 import com.asdp.service.MenuServiceImpl;
 import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
+import com.asdp.service.StorageService;
+import com.asdp.service.StorageServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
 import com.asdp.util.CommonResponseGenerator;
 import com.asdp.util.RequestContext;
 import com.asdp.util.ResponseMapping;
 import com.asdp.util.ResponseMappingDBImpl;
-
-
+import com.asdp.util.SystemConstant.UploadConstants;
 
 @EnableResourceServer
 @SpringBootApplication
-public class Application {
+public class Application implements CommandLineRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -46,6 +52,11 @@ public class Application {
 	@Bean
 	public MateriQuizService materiQuizService() {
 		return new MateriQuizServiceImpl();
+	}
+	
+	@Bean
+	public StorageService storageService() {
+		return new StorageServiceImpl();
 	}
 	
 	/* UTIL */
@@ -82,6 +93,15 @@ public class Application {
 
         };
     }
+	
+	@Resource
+	StorageService storageService;
+
+	@Override
+	public void run(String... args) throws Exception {
+		Path rootLocation = Paths.get(UploadConstants.PATH);
+		if(Files.notExists(rootLocation)) storageService.init();
+	}
 	
 	
 }

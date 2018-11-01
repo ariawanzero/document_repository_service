@@ -19,6 +19,7 @@ public class SystemRestConstant {
 		}
 
 		public static final String MATERI_QUIZ_CONTROLLER = "/materi";
+		public static final String SAVE_MATERI_QUIZ_HEADER_ADDR = "/saveMateriHeader";
 		public static final String SAVE_MATERI_QUIZ_ADDR = "/saveMateri";
 		public static final String FIND_MATERI_QUIZ_DETAIL_ADDR = "/findMateriDetail";
 		public static final String SEARCH_MATERI_QUIZ_ADDR = "/searchMateri";
