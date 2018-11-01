@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -28,6 +29,9 @@ public class MateriQuizEntity extends AuditEntity implements Serializable {
 	private List<String> nameFile;
 	private String nameFileJson;
 	private Integer valid = 1;
+	
+	@OneToOne(mappedBy = QuizEntity.Constant.MATERI_QUIZ)
+	private QuizEntity quiz;
 	
 	public String getId() {
 		return id;
@@ -62,6 +66,12 @@ public class MateriQuizEntity extends AuditEntity implements Serializable {
 		this.nameFileJson = nameFileJson;
 	}
 
+	public QuizEntity getQuiz() {
+		return quiz;
+	}
+	public void setQuiz(QuizEntity quiz) {
+		this.quiz = quiz;
+	}
 
 	public static class Constant {
 		private Constant() {}
@@ -69,6 +79,7 @@ public class MateriQuizEntity extends AuditEntity implements Serializable {
 		public static final String NAME_FIELD = "name";
 		public static final String NAME_FILE_FIELD = "nameFile";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
+		public static final String QUIZ_FIELD = "quiz";
 		public static final String VALID_FIELD = "valid";
 		public static final String JSON_FILTER = "jsonFilterMateriQuiz";
 	}

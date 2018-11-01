@@ -13,8 +13,14 @@ import com.asdp.service.MateriQuizService;
 import com.asdp.service.MateriQuizServiceImpl;
 import com.asdp.service.MenuService;
 import com.asdp.service.MenuServiceImpl;
+import com.asdp.service.QuestionService;
+import com.asdp.service.QuestionServiceImpl;
+import com.asdp.service.QuizService;
+import com.asdp.service.QuizServiceImpl;
 import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
+import com.asdp.service.ResultQuizService;
+import com.asdp.service.ResultQuizServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
 import com.asdp.util.CommonResponseGenerator;
@@ -46,6 +52,21 @@ public class Application {
 	@Bean
 	public MateriQuizService materiQuizService() {
 		return new MateriQuizServiceImpl();
+	}
+	
+	@Bean
+	public QuizService quizService() {
+		return new QuizServiceImpl();
+	}
+	
+	@Bean
+	public ResultQuizService resutQuizService() {
+		return new ResultQuizServiceImpl();
+	}
+	
+	@Bean
+	public QuestionService questionService() {
+		return new QuestionServiceImpl();
 	}
 	
 	/* UTIL */

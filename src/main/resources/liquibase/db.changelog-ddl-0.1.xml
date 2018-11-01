@@ -152,4 +152,57 @@
 			<column name="body_message" type="MEDIUMTEXT" />
 		</createTable>
 	</changeSet>
+	
+	<changeSet author="Septa" id="0.0-4" failOnError="true">
+		<createTable tableName="quiz">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="name" type="VARCHAR(100)" />
+			<column name="description" type="MEDIUMTEXT" />
+			<column name="divisi" type="VARCHAR(100)" />
+			<column name="start_date" type="datetime" />
+			<column name="end_date" type="datetime" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="total_quiz" type="INT"/>
+			<column name="pass_quiz" type="INT" defaultValue="0">
+				<constraints nullable="false" />
+			</column>
+			<column name="materi_quiz" type="VARCHAR(100)" />
+			
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="question">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="question" type="MEDIUMTEXT" />
+			<column name="quiz" type="VARCHAR(100)" />
+			<column name="answer_a" type="MEDIUMTEXT" />
+			<column name="answer_b" type="MEDIUMTEXT" />
+			<column name="answer_c" type="MEDIUMTEXT" />
+			<column name="answer_d" type="MEDIUMTEXT" />
+			<column name="correct_answer" type="VARCHAR(1)" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="result_quiz">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="username" type="VARCHAR(100)" />
+			<column name="quiz" type="VARCHAR(100)" />
+			<column name="question_answer_json" type="MEDIUMTEXT" />
+		</createTable>
+	</changeSet>
 </databaseChangeLog>

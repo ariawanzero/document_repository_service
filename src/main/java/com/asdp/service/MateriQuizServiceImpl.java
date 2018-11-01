@@ -165,8 +165,7 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 					name.toLowerCase()));
 			
 			if(id != null) {
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(MateriQuizEntity.Constant.ID_FIELD)),
-						SystemConstant.WILDCARD + id.toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.notEqual(root.<String>get(MateriQuizEntity.Constant.ID_FIELD),id.toLowerCase()));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
