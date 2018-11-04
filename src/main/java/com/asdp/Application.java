@@ -22,8 +22,6 @@ import com.asdp.service.QuizService;
 import com.asdp.service.QuizServiceImpl;
 import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
-import com.asdp.service.ResultQuizService;
-import com.asdp.service.ResultQuizServiceImpl;
 import com.asdp.service.StorageService;
 import com.asdp.service.StorageServiceImpl;
 import com.asdp.service.UserService;
@@ -61,11 +59,6 @@ public class Application implements CommandLineRunner {
 	@Bean
 	public QuizService quizService() {
 		return new QuizServiceImpl();
-	}
-	
-	@Bean
-	public ResultQuizService resutQuizService() {
-		return new ResultQuizServiceImpl();
 	}
 	
 	@Bean

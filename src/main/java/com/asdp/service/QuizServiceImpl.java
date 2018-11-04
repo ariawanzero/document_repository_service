@@ -192,4 +192,13 @@ public class QuizServiceImpl implements QuizService{
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 
+	@Override
+	public String saveResultQuiz(String id) throws Exception {
+		/*Optional<QuizEntity> quiz = quizRepo.findById(id);
+		quiz.get().getQuestionList().stream().map(question -> 
+		).;
+		return null;*/
+		return null;
+	}
+
 }

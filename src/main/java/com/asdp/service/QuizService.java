@@ -8,4 +8,5 @@ public interface QuizService {
 	String searchQuiz(QuizSearchRequest request)throws Exception;
 	String saveQuiz(QuizEntity request) throws Exception;
 	String saveQuizWithQuestion(QuizEntity request) throws Exception;
+	String saveResultQuiz(String id) throws Exception;
 }
