@@ -54,7 +54,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private List<QuestionEntity> questionList;
 	
 	@Transient
-	private MateriQuizEntity materi;
+	private String materiQuizId;
 
 	public String getId() {
 		return id;
@@ -141,15 +141,15 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		this.questionList = questionList;
 	}
 	
-	public MateriQuizEntity getMateri() {
+	public String getMateriQuizId() {
 		if(getMateriQuiz() != null) {
-			this.materi = getMateriQuiz();
+			this.materiQuizId = getMateriQuiz().getId();
 		}
-		return materi;
+		return materiQuizId;
 	}
 
-	public void setMateri(MateriQuizEntity materi) {
-		this.materi = materi;
+	public void setMateriQuizId(String materiQuizId) {
+		this.materiQuizId = materiQuizId;
 	}
 
 	public Integer getTotalQuiz() {

@@ -25,4 +25,15 @@ public class SystemRestConstant {
 		public static final String SEARCH_MATERI_QUIZ_ADDR = "/searchMateri";
 		public static final String DOWNLOAD_FILE_ADDR = "/downloadFile";
 	}
+	
+	public static final class QuizConstant {
+		private QuizConstant() {
+		}
+
+		public static final String QUIZ_CONTROLLER = "/quiz";
+		public static final String SAVE_QUIZ_ADDR = "/saveQuiz";
+		public static final String SAVE_QUESTION_ADDR = "/saveQuestion";
+		public static final String FIND_QUIZ_DETAIL_ADDR = "/findQuizDetail";
+		public static final String SEARCH_QUIZ_ADDR = "/searchQuiz";
+	}
 }
