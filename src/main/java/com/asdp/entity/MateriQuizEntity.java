@@ -26,6 +26,8 @@ public class MateriQuizEntity extends AuditEntity implements Serializable {
 	private String name;
 	@Transient
 	private List<String> nameFile;
+	@Transient
+	private String urlPreview;
 	private String nameFileJson;
 	private Integer valid = 1;
 	
@@ -34,6 +36,13 @@ public class MateriQuizEntity extends AuditEntity implements Serializable {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getUrlPreview() {
+		return urlPreview;
+	}
+	public void setUrlPreview(String urlPreview) {
+		this.urlPreview = urlPreview;
 	}
 	public String getName() {
 		return name;
