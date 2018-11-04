@@ -7,7 +7,7 @@ import com.asdp.entity.MateriQuizEntity;
 import com.asdp.request.MateriQuizSearchRequest;
 
 public interface MateriQuizService {
-	public Resource download(String nameFile) throws Exception;
+	Resource download(String nameFile) throws Exception;
 	String searchMateriQuiz(MateriQuizSearchRequest request) throws Exception;
 	String findOneById(String id) throws Exception;
 	String saveHeader(MateriQuizEntity request) throws Exception;

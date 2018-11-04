@@ -1,8 +1,5 @@
 package com.asdp.service;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +35,7 @@ import com.asdp.util.JsonUtil;
 import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
 import com.asdp.util.SystemConstant.UploadConstants;
+import com.asdp.util.SystemRestConstant.MateriQuizConstant;
 import com.asdp.util.UserException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -47,7 +44,6 @@ import liquibase.util.file.FilenameUtils;
 public class MateriQuizServiceImpl implements MateriQuizService{
 
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	private final Path rootLocation = Paths.get(UploadConstants.PATH);
 
 	@Autowired
 	private CommonResponseGenerator comGen;
@@ -104,17 +100,7 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 
 	@Override
 	public Resource download(String nameFile) throws Exception {
-		try {
-			Path file = rootLocation.resolve(nameFile);
-			Resource resource = new UrlResource(file.toUri());
-			if (resource.exists() || resource.isReadable()) {
-				return resource;
-			} else {
-				throw new UserException("400", "File not found !");
-			}
-		} catch (MalformedURLException e) {
-			throw new UserException("400", "General Error");
-		}
+		return storageService.loadFile(nameFile);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -137,7 +123,7 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		Page<MateriQuizEntity> paging = materiQuizRepo.findAll(spec, pageable);
 		
 		paging.getContent().stream().map(materi -> {
-			if(materi.getNameFile() != null) {
+			if(materi.getNameFileJson() != null) {
 				try {
 					materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
 				} catch (Exception e) {
@@ -184,7 +170,9 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		if(materi.get().getNameFileJson() != null) {
 			materi.get().setNameFile(JsonUtil.parseJson(materi.get().getNameFileJson(), ArrayList.class));
 		}
-
+		materi.get().setUrlPreview(UploadConstants.URL_PREVIEW.concat(MateriQuizConstant.MATERI_QUIZ_CONTROLLER)
+				.concat(MateriQuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+		
 		CommonResponse<MateriQuizEntity> response = new CommonResponse<>(materi.get());
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(MateriQuizEntity.Constant.JSON_FILTER),
@@ -212,9 +200,8 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		materi.setCreatedBy(users.getUsername());
 		materi.setCreatedDate(new Date());
 		materiQuizRepo.save(materi);
-		materiQuizRepo.flush();
 		
-		CommonResponse<String> response = comGen.generateCommonResponse(materi.getId());
+		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 

@@ -13,6 +13,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.asdp.util.UserException;
 import com.asdp.util.SystemConstant.UploadConstants;
 
 public class StorageServiceImpl implements StorageService {
@@ -30,17 +31,17 @@ public class StorageServiceImpl implements StorageService {
 	}
 
 	@Override
-	public Resource loadFile(String filename) {
+	public Resource loadFile(String filename) throws UserException {
 		try {
 			Path file = rootLocation.resolve(filename);
 			Resource resource = new UrlResource(file.toUri());
 			if (resource.exists() || resource.isReadable()) {
 				return resource;
 			} else {
-				throw new RuntimeException("FAIL!");
+				throw new UserException("400", "File not found !");
 			}
 		} catch (MalformedURLException e) {
-			throw new RuntimeException("FAIL!");
+			throw new RuntimeException("General Error");
 		}
 	}
 
