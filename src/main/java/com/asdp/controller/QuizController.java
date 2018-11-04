@@ -18,7 +18,12 @@ public class QuizController {
 	private QuizService quizService;
 	
 	@PostMapping(SystemRestConstant.QuizConstant.SAVE_QUIZ_ADDR)
-	public String saveMateriHeader(@RequestBody QuizEntity request) throws Exception {
+	public String saveQuiz(@RequestBody QuizEntity request) throws Exception {
 		return quizService.saveQuiz(request);
+	}
+	
+	@PostMapping(SystemRestConstant.QuizConstant.SAVE_QUESTION_ADDR)
+	public String saveQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
+		return quizService.saveQuizWithQuestion(request);
 	}
 }
