@@ -26,4 +26,12 @@ public class SystemRestConstant {
 		public static final String SEARCH_MATERI_QUIZ_ADDR = "/searchMateri";
 		public static final String DOWNLOAD_FILE_ADDR = "/downloadFile";
 	}
+	
+	public static final class OpenFileConstant {
+		private OpenFileConstant() {
+		}
+
+		public static final String OPEN_CONTROLLER = "/open";
+		public static final String PREVIEW_FILE_ADDR = "/previewFile";
+	}
 }
