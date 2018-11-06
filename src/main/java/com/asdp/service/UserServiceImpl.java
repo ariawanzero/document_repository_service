@@ -231,12 +231,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		if (StringFunction.isNotEmpty(request.getId())) {
 			Optional<UserEntity> existUser = userRepo.findById(request.getId());
-			if (existUser == null) {
+			if (!existUser.isPresent()) {
 				throw new UserException("400", "User not found !");
 			} else {
 				toUpdate = existUser.get();
 			}
-			
+			request.setPassword(toUpdate.getPassword());
 			BeanUtils.copyProperties(request, toUpdate);
 		}else{
 			String password = StringFunction.randomAlphaNumeric(7);
