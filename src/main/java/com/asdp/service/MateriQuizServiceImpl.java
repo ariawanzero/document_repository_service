@@ -36,6 +36,7 @@ import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
 import com.asdp.util.SystemConstant.UploadConstants;
 import com.asdp.util.SystemRestConstant.MateriQuizConstant;
+import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.UserException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -171,7 +172,7 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		if(materi.get().getNameFileJson() != null) {
 			materi.get().setNameFile(JsonUtil.parseJson(materi.get().getNameFileJson(), ArrayList.class));
 		}
-		materi.get().setUrlPreview(UploadConstants.URL_PREVIEW.concat(MateriQuizConstant.MATERI_QUIZ_CONTROLLER)
+		materi.get().setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 				.concat(MateriQuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
 		
 		CommonResponse<MateriQuizEntity> response = new CommonResponse<>(materi.get());
