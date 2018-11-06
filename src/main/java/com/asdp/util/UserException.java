@@ -20,7 +20,7 @@ public class UserException extends Exception {
 	}
 
 	public String getMessage() {
-		return this.errorCode + " - " + this.errorDesc;
+		return this.errorDesc;
 	}
 
 	public void setErrorCode(String errorCode) {
