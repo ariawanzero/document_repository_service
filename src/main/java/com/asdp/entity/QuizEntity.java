@@ -7,12 +7,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -42,10 +39,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private Integer valid = 1;
 	//if the quiz hasn't started yet, passQuiz will be 0. for flagging can edit or not after the quiz has been started.
 	private Integer passQuiz = 0;
-	
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="materi_quiz")
-	private MateriQuizEntity materiQuiz;
+	private String nameFileJson;
 	
 	@OneToMany(mappedBy = QuestionEntity.Constant.QUIZ_FIELD)
 	private Set<QuestionEntity> question;
@@ -54,7 +48,10 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private List<QuestionEntity> questionList;
 	
 	@Transient
-	private String materiQuizId;
+	private List<String> nameFile;
+	
+	@Transient
+	private String urlPreview;
 
 	public String getId() {
 		return id;
@@ -112,14 +109,6 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		this.valid = valid;
 	}
 
-	public MateriQuizEntity getMateriQuiz() {
-		return materiQuiz;
-	}
-
-	public void setMateriQuiz(MateriQuizEntity materiQuiz) {
-		this.materiQuiz = materiQuiz;
-	}
-
 	public Set<QuestionEntity> getQuestion() {
 		return question;
 	}
@@ -140,17 +129,6 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	public void setQuestionList(List<QuestionEntity> questionList) {
 		this.questionList = questionList;
 	}
-	
-	public String getMateriQuizId() {
-		if(getMateriQuiz() != null) {
-			this.materiQuizId = getMateriQuiz().getId();
-		}
-		return materiQuizId;
-	}
-
-	public void setMateriQuizId(String materiQuizId) {
-		this.materiQuizId = materiQuizId;
-	}
 
 	public Integer getTotalQuiz() {
 		return totalQuiz;
@@ -168,6 +146,32 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		this.passQuiz = passQuiz;
 	}
 
+	public String getNameFileJson() {
+		return nameFileJson;
+	}
+
+	public void setNameFileJson(String nameFileJson) {
+		this.nameFileJson = nameFileJson;
+	}
+
+	public List<String> getNameFile() {
+		return nameFile;
+	}
+
+	public void setNameFile(List<String> nameFile) {
+		this.nameFile = nameFile;
+	}
+
+	public String getUrlPreview() {
+		return urlPreview;
+	}
+
+	public void setUrlPreview(String urlPreview) {
+		this.urlPreview = urlPreview;
+	}
+
+
+
 	public static class Constant {
 		private Constant() {}
 		public static final String ID_FIELD = "id";
@@ -176,11 +180,13 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		public static final String DIVISI_FIELD = "divisi";
 		public static final String START_DATE_FIELD = "startDate";
 		public static final String END_DATE_FIELD = "endDate";
-		public static final String MATERI_QUIZ = "materiQuiz";
 		public static final String QUESTION_FIELD = "question";
 		public static final String VALID_FIELD = "valid";
 		public static final String TOTAL_QUIZ_FIELD = "totalQuiz";
 		public static final String PASS_QUIZ_FIELD = "passQuiz";
+		public static final String NAME_FILE_FIELD = "nameFile";
+		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
+		public static final String QUIZ_FIELD = "quiz";
 		public static final String JSON_FILTER = "jsonFilterQuiz";
 	}
 	
