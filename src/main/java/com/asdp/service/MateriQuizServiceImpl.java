@@ -3,7 +3,6 @@ package com.asdp.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.criteria.Predicate;
@@ -36,6 +35,7 @@ import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
 import com.asdp.util.SystemConstant.UploadConstants;
 import com.asdp.util.SystemRestConstant.MateriQuizConstant;
+import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.UserException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -65,34 +65,31 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 		UserEntity users = new UserEntity();
 		BeanUtils.copyProperties(principal, users);
 		
-		Optional<MateriQuizEntity> en = materiQuizRepo.findById(id);
+		MateriQuizEntity en = materiQuizRepo.findById(id).orElseThrow(() -> new UserException("400", "Data not Exists"));
 		List<String> fileName = new ArrayList<>();
 		
-		if(en.get() != null) {
-			if(en.get().getNameFileJson() != null) {
-				fileName = JsonUtil.parseJson(en.get().getNameFileJson(), ArrayList.class);
-			}
-			
-			try {
-				String name = en.get().getName().concat("-")
-												.concat(String.valueOf(fileName.size() + 1))
-												.concat(".")
-												.concat(FilenameUtils.getExtension(file.getOriginalFilename()));
-				fileName.add(name);
-				storageService.store(file, name);
-			} catch (Exception e) {
-				throw new UserException("400", "Fail Transfer File to Server !");
-			}
-			
-			MateriQuizEntity materi = en.get();
-			materi.setNameFileJson(JsonUtil.generateJson(fileName));
-			materi.setModifiedBy(users.getUsername());
-			materi.setModifiedDate(new Date());
-			materiQuizRepo.save(materi);
-		} else {
-			throw new UserException("400", "Data not Exists");
+		if(en.getNameFileJson() != null) {
+			fileName = JsonUtil.parseJson(en.getNameFileJson(), ArrayList.class);
 		}
 		
+		try {
+			String name = en.getName()
+							.concat("-")
+							.concat(String.valueOf(fileName.size() + 1))
+							.concat(".")
+							.concat(FilenameUtils.getExtension(file.getOriginalFilename()));
+			
+			fileName.add(name);
+			storageService.store(file, name);
+		} catch (Exception e) {
+			throw new UserException("400", "Fail Transfer File to Server !");
+		}
+		
+		MateriQuizEntity materi = en;
+		materi.setNameFileJson(JsonUtil.generateJson(fileName));
+		materi.setModifiedBy(users.getUsername());
+		materi.setModifiedDate(new Date());
+		materiQuizRepo.save(materi);
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
@@ -163,17 +160,15 @@ public class MateriQuizServiceImpl implements MateriQuizService{
 	@SuppressWarnings("unchecked")
 	@Override
 	public String findOneById(String id) throws Exception {
-		Optional<MateriQuizEntity> materi = materiQuizRepo.findById(id);
+		MateriQuizEntity materi = materiQuizRepo.findById(id).orElseThrow(() -> new UserException("400", "User not found"));
 		
-		if (materi.get() == null) throw new UserException("400", "User not found");
-		
-		if(materi.get().getNameFileJson() != null) {
-			materi.get().setNameFile(JsonUtil.parseJson(materi.get().getNameFileJson(), ArrayList.class));
+		if(materi.getNameFileJson() != null) {
+			materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
 		}
-		materi.get().setUrlPreview(UploadConstants.URL_PREVIEW.concat(MateriQuizConstant.MATERI_QUIZ_CONTROLLER)
+		materi.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 				.concat(MateriQuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
 		
-		CommonResponse<MateriQuizEntity> response = new CommonResponse<>(materi.get());
+		CommonResponse<MateriQuizEntity> response = new CommonResponse<>(materi);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(MateriQuizEntity.Constant.JSON_FILTER),
 				new JsonFilter(MateriQuizEntity.Constant.JSON_FILTER, MateriQuizEntity.Constant.NAME_FILE_JSON_FIELD));

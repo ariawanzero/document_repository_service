@@ -199,14 +199,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 	@Override
 	public String findOneById(String id) throws Exception {
-		Optional<UserEntity> user = userRepo.findById(id);
+		UserEntity user = userRepo.findById(id).orElseThrow(() -> new UserException("400", "User not found"));
 		
-		if (user.get() == null) throw new UserException("400", "User not found");
-		
-		user.get().setUserRoleName(user.get().getUserRole().getRoleName());
-		user.get().setUserRoleId(user.get().getUserRole().getUserRoleCode());
+		user.setUserRoleName(user.getUserRole().getRoleName());
+		user.setUserRoleId(user.getUserRole().getUserRoleCode());
 
-		CommonResponse<UserEntity> response = new CommonResponse<>(user.get());
+		CommonResponse<UserEntity> response = new CommonResponse<>(user);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(UserEntity.Constant.JSON_FILTER),
 				new JsonFilter(UserEntity.Constant.JSON_FILTER, UserEntity.Constant.USER_ROLE_FIELD, UserEntity.Constant.PASSWORD_FIELD),
@@ -231,12 +229,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		if (StringFunction.isNotEmpty(request.getId())) {
 			Optional<UserEntity> existUser = userRepo.findById(request.getId());
-			if (existUser == null) {
+			if (!existUser.isPresent()) {
 				throw new UserException("400", "User not found !");
 			} else {
 				toUpdate = existUser.get();
 			}
-			
+			request.setPassword(toUpdate.getPassword());
 			BeanUtils.copyProperties(request, toUpdate);
 		}else{
 			String password = StringFunction.randomAlphaNumeric(7);
