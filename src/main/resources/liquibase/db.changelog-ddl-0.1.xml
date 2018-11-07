@@ -125,24 +125,7 @@
 			<column name="expiresAt" type="DATETIME" />
 			<column name="lastModifiedAt" type="DATETIME" />			
 		</createTable>
-	</changeSet>
-	<changeSet author="Septa" id="0.0-2" failOnError="true">
-		<createTable tableName="materi_quiz">
-			<column name="id" type="VARCHAR(100)">
-				<constraints primaryKey="true" nullable="false" />
-			</column>
-			<column name="name" type="VARCHAR(100)" />
-			<column name="valid" type="INT" defaultValue="1">
-				<constraints nullable="false" />
-			</column>
-			<column name="name_file_json" type="MEDIUMTEXT" />
-			<column name="created_by" type="VARCHAR(200)" />
-			<column name="created_date" type="datetime" />
-			<column name="modified_by" type="VARCHAR(200)" />
-			<column name="modified_date" type="datetime" />
-		</createTable>
-	</changeSet>
-	
+	</changeSet>	
 	<changeSet author="Septa" id="0.0-3" failOnError="true">
 		<createTable tableName="sys_email">
 			<column name="email_code" type="VARCHAR(100)">
@@ -163,6 +146,7 @@
 			<column name="divisi" type="VARCHAR(100)" />
 			<column name="start_date" type="datetime" />
 			<column name="end_date" type="datetime" />
+			<column name="name_file_json" type="MEDIUMTEXT" />
 			<column name="valid" type="INT" defaultValue="1">
 				<constraints nullable="false" />
 			</column>
@@ -170,7 +154,6 @@
 			<column name="pass_quiz" type="INT" defaultValue="0">
 				<constraints nullable="false" />
 			</column>
-			<column name="materi_quiz" type="VARCHAR(100)" />
 			
 			<column name="created_by" type="VARCHAR(200)" />
 			<column name="created_date" type="datetime" />
