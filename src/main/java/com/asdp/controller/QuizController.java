@@ -36,6 +36,11 @@ public class QuizController {
 		return quizService.saveHeader(request);
 	}
 	
+	@PostMapping(SystemRestConstant.QuizConstant.PUBLISH_QUIZ_ADDR)
+	public String publishQuiz(@RequestBody QuizEntity request) throws Exception {
+		return quizService.publishQuiz(request);
+	}
+	
 	@PostMapping(SystemRestConstant.QuizConstant.UPLOAD_MATERI_QUIZ_ADDR)
 	public String saveMateriQuiz(@RequestParam("id") String id, @RequestParam("file") MultipartFile file) throws Exception {
 		return quizService.save(file, id);
@@ -44,5 +49,10 @@ public class QuizController {
 	@PostMapping(SystemRestConstant.QuizConstant.SAVE_QUESTION_ADDR)
 	public String saveQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
 		return quizService.saveQuizWithQuestion(request);
+	}
+	
+	@PostMapping(SystemRestConstant.QuizConstant.START_QUIZ_ADDR)
+	public String startQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
+		return quizService.startQuiz(request.getId());
 	}
 }

@@ -13,5 +13,6 @@ public interface QuizService {
 	String saveHeader(QuizEntity request) throws Exception;
 	String save(MultipartFile file, String id) throws Exception;
 	String saveQuizWithQuestion(QuizEntity request) throws Exception;
-	String saveResultQuiz(String id) throws Exception;
+	String startQuiz(String id) throws Exception;
+	String publishQuiz(QuizEntity request) throws Exception;
 }

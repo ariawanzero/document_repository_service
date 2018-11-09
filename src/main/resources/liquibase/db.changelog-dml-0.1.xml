@@ -344,4 +344,13 @@
 			</column>
 		</insert>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-6" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="QUIZNOTIF" />
+			<column name="subject" value="New Quiz has been Published" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>A quiz has been published, please check infoasdp to see the material before answering the question.<br/>Quiz Name: %s<br/>Quiz Schedule: %s<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
 </databaseChangeLog>

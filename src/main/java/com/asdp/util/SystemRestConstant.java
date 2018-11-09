@@ -30,6 +30,8 @@ public class SystemRestConstant {
 		public static final String FIND_MATERI_QUIZ_DETAIL_ADDR = "/findMateriDetail";
 		public static final String SEARCH_MATERI_QUIZ_ADDR = "/searchMateri";
 		public static final String DOWNLOAD_FILE_ADDR = "/downloadFile";
+		public static final String START_QUIZ_ADDR = "/startQuiz";
+		public static final String PUBLISH_QUIZ_ADDR = "/publishQuiz";
 	}
 	
 	public static final class OpenFileConstant {

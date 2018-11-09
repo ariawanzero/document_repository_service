@@ -273,7 +273,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		Specification<HistoryLoginEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
 			if (request.getStartDate() != null && request.getEndDate() != null) {
-				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), request.getEndDate()));
+				Date dayAfter = new Date(request.getEndDate().getTime()+(24*60*60*1000));
+				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), dayAfter));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};

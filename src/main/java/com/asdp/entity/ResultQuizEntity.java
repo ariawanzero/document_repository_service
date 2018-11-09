@@ -2,6 +2,7 @@ package com.asdp.entity;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -33,6 +34,9 @@ public class ResultQuizEntity implements Serializable {
 	@Transient
 	private Map<String, String> questionAnswer;
 	
+	@Transient
+	private List<QuestionEntity> questions;
+	
 	private String questionAnswerJson;
 	
 	public String getId() {
@@ -40,6 +44,12 @@ public class ResultQuizEntity implements Serializable {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	public List<QuestionEntity> getQuestions() {
+		return questions;
+	}
+	public void setQuestions(List<QuestionEntity> questions) {
+		this.questions = questions;
 	}
 	public String getUsername() {
 		return username;
@@ -76,6 +86,7 @@ public class ResultQuizEntity implements Serializable {
 		public static final String USERNAME_FIELD = "username";
 		public static final String QUESTION_ANSWER_FIELD = "questionAnswer";
 		public static final String QUESTION_ANSWER_JSON_FIELD = "questionAnswerJson";
+		public static final String QUESTIONS_JSON_FIELD = "questions";
 		public static final String JSON_FILTER = "jsonFilterResultQuiz";
 	}
 

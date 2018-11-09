@@ -2,10 +2,19 @@ package com.asdp.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,17 +30,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.asdp.entity.EmailEntity;
 import com.asdp.entity.QuestionEntity;
 import com.asdp.entity.QuizEntity;
+import com.asdp.entity.ResultQuizEntity;
 import com.asdp.entity.UserEntity;
+import com.asdp.repository.EmailRepository;
 import com.asdp.repository.QuestionRepository;
 import com.asdp.repository.QuizRepository;
+import com.asdp.repository.ResultQuizRepository;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.util.CommonPageUtil;
 import com.asdp.util.CommonPaging;
 import com.asdp.util.CommonResponse;
 import com.asdp.util.CommonResponseGenerator;
 import com.asdp.util.CommonResponsePaging;
+import com.asdp.util.DateTimeFunction;
+import com.asdp.util.EmailUtils;
 import com.asdp.util.JsonFilter;
 import com.asdp.util.JsonUtil;
 import com.asdp.util.StringFunction;
@@ -57,12 +72,21 @@ public class QuizServiceImpl implements QuizService{
 	
 	@Autowired
 	private QuestionRepository questionRepo;
+	
+	@Autowired
+	private ResultQuizRepository resultQuizRepo;
 
 	@Autowired
 	private CommonPageUtil pageUtil;
 	
 	@Autowired
 	StorageService storageService;
+	
+	@Autowired
+	private EmailRepository emailRepo;
+	
+	@PersistenceContext
+	EntityManager em;
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -133,15 +157,6 @@ public class QuizServiceImpl implements QuizService{
 		};
 		
 		Page<QuizEntity> paging = quizRepo.findAll(spec, pageable);
-		/*paging.getContent().stream().map(quiz -> {
-			if(DateTimeFunction.getExpiredDate(quiz.getStartDate())){
-				quiz.setPassQuiz(ValidFlag.INVALID);
-				listExpired.add(quiz);
-			}
-			return quiz;
-		}).collect(Collectors.toList());
-		
-		if(listExpired.size() > 0) updateStatusInvalid(listExpired);*/
 		
 		CommonResponsePaging<QuizEntity> restResponse = comGen
 				.generateCommonResponsePaging(new CommonPaging<>(paging));
@@ -178,13 +193,14 @@ public class QuizServiceImpl implements QuizService{
 	@SuppressWarnings("unchecked")
 	@Override
 	public String findOneById(String id) throws Exception {
-		QuizEntity materi = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "User not found"));
+		QuizEntity materi = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "Quiz not found"));
 		
 		if(materi.getNameFileJson() != null) {
 			materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
 		}
 		materi.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 				.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+		materi.getQuestionList();
 		
 		CommonResponse<QuizEntity> response = new CommonResponse<>(materi);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
@@ -262,12 +278,102 @@ public class QuizServiceImpl implements QuizService{
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public String saveResultQuiz(String id) throws Exception {
-		/*Optional<QuizEntity> quiz = quizRepo.findById(id);
-		quiz.get().getQuestionList().stream().map(question -> 
-		).;
-		return null;*/
-		return null;
+	public String startQuiz(String id) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		Random rand = new Random();
+
+		QuizEntity quiz = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "Quiz not found"));
+		
+		/*if(quiz.getPassQuiz() != 1 || !DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
+			throw new UserException("400", "the quiz hasn't started yet !");
+		}*/
+		
+		ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
+		List<QuestionEntity> questions;
+		List<QuestionEntity> listQuestionFinal = new ArrayList<>();
+		Map<String, String> mapQuestion = new HashMap<>();
+		if(resultQuiz == null) {
+			questions = questionRepo.findByQuiz(quiz);
+			for(int i=0; i<quiz.getTotalQuiz(); i++) {
+				int randomIndex = rand.nextInt(questions.size());
+
+				mapQuestion.put(questions.get(randomIndex).getId(), " ");
+				listQuestionFinal.add(questions.get(randomIndex));
+				
+				questions.remove(randomIndex);
+			}
+			resultQuiz = new ResultQuizEntity();
+			String mapQuesions = JsonUtil.generateJson(mapQuestion);
+			resultQuiz.setQuestionAnswerJson(mapQuesions);
+			resultQuiz.setQuestionAnswer(mapQuestion);
+			resultQuiz.setQuiz(quiz.getId());
+			resultQuiz.setUsername(users.getUsername());
+			resultQuiz.setQuestions(listQuestionFinal);
+			
+			resultQuizRepo.save(resultQuiz);
+		}else {
+			mapQuestion = JsonUtil.parseJson(resultQuiz.getQuestionAnswerJson(), HashMap.class);
+			ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
+			
+			CriteriaBuilder cb = em.getCriteriaBuilder();
+			CriteriaQuery<QuestionEntity> query = cb.createQuery(QuestionEntity.class);
+			Root<QuestionEntity> root = query.from(QuestionEntity.class);
+			Expression<String> parentExpression = root.get(QuestionEntity.Constant.ID_FIELD);			
+			Predicate parentPredicate = parentExpression.in(listId);
+			query.select(root).where(parentPredicate);
+
+			questions = em.createQuery(query).getResultList();
+			resultQuiz.setQuestions(questions);
+		}
+		
+		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
+		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD));
+
+		return writter.writeValueAsString(response);
+	}
+
+	@Override
+	public String publishQuiz(QuizEntity request) throws Exception {
+		QuizEntity quiz = quizRepo.findById(request.getId()).orElseThrow(() -> new UserException("400", "Quiz not found"));
+		if(DateTimeFunction.getTimeExpired(quiz.getStartDate())){
+			throw new UserException("400", "Start date has passed, please edit start date !");
+		}
+		quiz.setPassQuiz(ValidFlag.VALID);
+		quizRepo.save(quiz);
+		
+		sendNotificationQuiz(quiz);
+
+		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
+		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
+	}
+	
+	@Async
+	public void sendNotificationQuiz(QuizEntity quiz) throws Exception{
+		CriteriaBuilder critBuilder = em.getCriteriaBuilder();
+		
+		CriteriaQuery<UserEntity> query = critBuilder.createQuery(UserEntity.class);
+		Root<UserEntity> root = query.from(UserEntity.class);
+		List<Predicate> lstWhere = new ArrayList<Predicate>();
+		lstWhere.add(critBuilder.like(root.get(UserEntity.Constant.DIVISI_FIELD), 
+				SystemConstant.WILDCARD + quiz.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+		query.select(root).where(lstWhere.toArray(new Predicate[] {}));
+		List<UserEntity> users = em.createQuery(query).getResultList();
+		users.stream().filter(user -> user.getUserRole().getUserRoleCode() != "0" && user.getUserRole().getUserRoleCode() != "1");
+		
+		String dateFormat = "HH:mm dd-MMM-yyyy";
+		String date = DateTimeFunction.date2String(quiz.getStartDate(), dateFormat).concat(" - ").concat(DateTimeFunction.date2String(quiz.getEndDate(), dateFormat));
+		Optional<EmailEntity> email = emailRepo.findById("QUIZNOTIF");
+		for(UserEntity user : users) {
+			EmailUtils.sendEmail(user.getUsername(), String.format(email.get().getBodyMessage(), user.getName(), quiz.getName(), date), email.get().getSubject());
+		}
+		
 	}
 }

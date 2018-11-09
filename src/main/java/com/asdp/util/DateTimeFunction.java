@@ -705,4 +705,9 @@ public class DateTimeFunction {
 		return check.before(new Date(System.currentTimeMillis()-24*60*60*1000));
 	}
 	
+	public static boolean getTimeExpired(Date param) {
+		boolean result = param.getTime() <= new Date().getTime() ? true : false;
+		return result;
+	}
+	
 }
