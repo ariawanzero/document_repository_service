@@ -1,6 +1,7 @@
 package com.asdp.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -346,7 +347,7 @@ public class QuizServiceImpl implements QuizService{
 		if(DateTimeFunction.getTimeExpired(quiz.getStartDate())){
 			throw new UserException("400", "Start date has passed, please edit start date !");
 		}
-		quiz.setPassQuiz(ValidFlag.VALID);
+		quiz.setPublish(true);
 		quizRepo.save(quiz);
 		
 		sendNotificationQuiz(quiz);

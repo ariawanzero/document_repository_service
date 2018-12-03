@@ -38,7 +38,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private Integer totalQuiz;
 	private Integer valid = 1;
 	//if the quiz hasn't started yet, passQuiz will be 0. for flagging can edit or not after the quiz has been started.
-	private Integer passQuiz = 0;
+	private Boolean publish = false;
 	private String nameFileJson;
 	
 	@OneToMany(mappedBy = QuestionEntity.Constant.QUIZ_FIELD)
@@ -76,15 +76,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
-	public String getDivisi() {
-		return divisi;
-	}
-
-	public void setDivisi(String divisi) {
-		this.divisi = divisi;
-	}
-
+	
 	public Date getStartDate() {
 		return startDate;
 	}
@@ -138,14 +130,6 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		this.totalQuiz = totalQuiz;
 	}
 
-	public Integer getPassQuiz() {
-		return passQuiz;
-	}
-
-	public void setPassQuiz(Integer passQuiz) {
-		this.passQuiz = passQuiz;
-	}
-
 	public String getNameFileJson() {
 		return nameFileJson;
 	}
@@ -171,6 +155,23 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	}
 
 
+	public String getDivisi() {
+		return divisi;
+	}
+
+	public void setDivisi(String divisi) {
+		this.divisi = divisi;
+	}
+
+
+	public Boolean getPublish() {
+		return publish;
+	}
+
+	public void setPublish(Boolean publish) {
+		this.publish = publish;
+	}
+
 
 	public static class Constant {
 		private Constant() {}
@@ -183,7 +184,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		public static final String QUESTION_FIELD = "question";
 		public static final String VALID_FIELD = "valid";
 		public static final String TOTAL_QUIZ_FIELD = "totalQuiz";
-		public static final String PASS_QUIZ_FIELD = "passQuiz";
+		public static final String PUBLISH_FIELD = "publish";
 		public static final String NAME_FILE_FIELD = "nameFile";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
 		public static final String QUIZ_FIELD = "quiz";
