@@ -45,9 +45,6 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private Set<QuestionEntity> question;
 	
 	@Transient
-	private List<QuestionEntity> questionList;
-	
-	@Transient
 	private List<String> nameFile;
 	
 	@Transient
@@ -107,19 +104,6 @@ public class QuizEntity extends AuditEntity implements Serializable {
 
 	public void setQuestion(Set<QuestionEntity> question) {
 		this.question = question;
-	}
-
-	public List<QuestionEntity> getQuestionList() {
-		if (getQuestion() != null) {
-			this.questionList = getQuestion().stream()
-					.filter(a -> a.getValid() == 1)
-					.collect(Collectors.toList());
-		}
-		return questionList;
-	}
-
-	public void setQuestionList(List<QuestionEntity> questionList) {
-		this.questionList = questionList;
 	}
 
 	public Integer getTotalQuiz() {

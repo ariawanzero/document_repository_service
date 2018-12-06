@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.asdp.entity.QuestionEntity;
 import com.asdp.entity.QuizEntity;
+import com.asdp.request.QuestionRequest;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.service.QuizService;
 import com.asdp.util.SystemRestConstant;
@@ -46,8 +48,13 @@ public class QuizController {
 		return quizService.save(file, id);
 	}
 	
+	@PostMapping(SystemRestConstant.QuizConstant.SEARCH_QUESTION_ADDR)
+	public String searchHistoryLogin(@RequestBody QuestionRequest request) throws Exception {				
+		return quizService.searchMateriQuestion(request);
+	}
+	
 	@PostMapping(SystemRestConstant.QuizConstant.SAVE_QUESTION_ADDR)
-	public String saveQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
+	public String saveQuizWithQuestions(@RequestBody QuestionEntity request) throws Exception {
 		return quizService.saveQuizWithQuestion(request);
 	}
 	

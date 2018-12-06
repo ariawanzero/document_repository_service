@@ -1,7 +1,6 @@
 package com.asdp.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +39,7 @@ import com.asdp.repository.EmailRepository;
 import com.asdp.repository.QuestionRepository;
 import com.asdp.repository.QuizRepository;
 import com.asdp.repository.ResultQuizRepository;
+import com.asdp.request.QuestionRequest;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.util.CommonPageUtil;
 import com.asdp.util.CommonPaging;
@@ -164,7 +164,8 @@ public class QuizServiceImpl implements QuizService{
 		
 		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(QuizEntity.Constant.JSON_FILTER),
-				new JsonFilter(QuizEntity.Constant.JSON_FILTER, QuizEntity.Constant.QUESTION_FIELD));
+				new JsonFilter(QuizEntity.Constant.JSON_FILTER, QuizEntity.Constant.QUESTION_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER));
 		
 		return writer.writeValueAsString(restResponse);
 	}
@@ -201,7 +202,6 @@ public class QuizServiceImpl implements QuizService{
 		}
 		materi.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 				.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
-		materi.getQuestionList();
 		
 		CommonResponse<QuizEntity> response = new CommonResponse<>(materi);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
@@ -250,31 +250,28 @@ public class QuizServiceImpl implements QuizService{
 	}
 	
 	@Override
-	public String saveQuizWithQuestion(QuizEntity request) throws Exception {
-		Optional<QuizEntity> quiz = null;
+	public String saveQuizWithQuestion(QuestionEntity request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
 		
-		if (StringFunction.isEmpty(request.getId())) {
-			throw new UserException("400", "Quiz is Mandatory!");
+		if (StringFunction.isEmpty(request.getQuizId())) throw new UserException("400", "Quiz is Mandatory!");
+		
+		QuizEntity quiz = quizRepo.findById(request.getQuizId()).orElseThrow(() -> new UserException("400", "Quiz not Found!"));
+		
+		QuestionEntity qt = request;
+		qt.setQuiz(quiz);
+		if(request.getId() != null && !StringFunction.isEmpty(request.getId())) {
+			qt.setModifiedBy(users.getUsername());
+			qt.setModifiedDate(new Date());
+		} else {
+			qt.setCreatedBy(users.getUsername());
+			qt.setCreatedDate(new Date());
 		}
 		
-		quiz = quizRepo.findById(request.getId());
-		if (quiz == null) {
-			throw new UserException("400", "Quiz not Found!");
-		}
-		List<QuestionEntity> questions = new ArrayList<>();
-		if(request.getQuestion() != null && !request.getQuestion().isEmpty()) {
-			List<QuestionEntity> temp = new ArrayList<>(request.getQuestion());
+		questionRepo.save(qt);
 
-			for (QuestionEntity e : temp) {
-				e.setQuiz(quiz.get());
-				questions.add(e);
-			}
-		}
-		
-		if (!questions.isEmpty()) {
-			questionRepo.saveAll(questions);
-		}
-		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
@@ -317,7 +314,7 @@ public class QuizServiceImpl implements QuizService{
 			resultQuiz.setQuestions(listQuestionFinal);
 			
 			resultQuizRepo.save(resultQuiz);
-		}else {
+		} else {
 			mapQuestion = JsonUtil.parseJson(resultQuiz.getQuestionAnswerJson(), HashMap.class);
 			ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
 			
@@ -376,5 +373,39 @@ public class QuizServiceImpl implements QuizService{
 			EmailUtils.sendEmail(user.getUsername(), String.format(email.get().getBodyMessage(), user.getName(), quiz.getName(), date), email.get().getSubject());
 		}
 		
+	}
+
+	@Override
+	public String searchMateriQuestion(QuestionRequest request) throws Exception {
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+				new Sort(Sort.Direction.DESC, QuestionEntity.Constant.CREATED_DATE_FIELD));
+		
+		if (StringFunction.isEmpty(request.getId()) || request.getId() == null) {
+			throw new UserException("400", "Header Quiz doesn't found");
+		}
+		
+		QuizEntity quiz = new QuizEntity();
+		quiz.setId(request.getId());
+		
+		Specification<QuestionEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+			list.add(criteriaBuilder.equal(root.<String>get(QuestionEntity.Constant.VALID_FIELD),
+						ValidFlag.VALID));
+			list.add(criteriaBuilder.equal(root.<String>get(QuestionEntity.Constant.QUIZ_FIELD), quiz));
+			
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+		
+		Page<QuestionEntity> paging = questionRepo.findAll(spec,pageable);
+		
+		CommonResponsePaging<QuestionEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+		
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD),
+				new JsonFilter(QuizEntity.Constant.JSON_FILTER));
+		
+		return writer.writeValueAsString(restResponse);
 	}
 }

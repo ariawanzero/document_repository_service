@@ -165,11 +165,11 @@
 			</column>
 			<column name="question" type="MEDIUMTEXT" />
 			<column name="quiz" type="VARCHAR(100)" />
-			<column name="answera" type="MEDIUMTEXT" />
-			<column name="answerb" type="MEDIUMTEXT" />
-			<column name="answerc" type="MEDIUMTEXT" />
-			<column name="answerd" type="MEDIUMTEXT" />
-			<column name="correct_answer" type="VARCHAR(1)" />
+			<column name="choicea" type="MEDIUMTEXT" />
+			<column name="choiceb" type="MEDIUMTEXT" />
+			<column name="choicec" type="MEDIUMTEXT" />
+			<column name="choiced" type="MEDIUMTEXT" />
+			<column name="answer" type="VARCHAR(1)" />
 			<column name="valid" type="INT" defaultValue="1">
 				<constraints nullable="false" />
 			</column>

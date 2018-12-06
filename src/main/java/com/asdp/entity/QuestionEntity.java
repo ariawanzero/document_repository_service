@@ -34,12 +34,13 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 	@Transient
 	private String quizId;
 	
-	private String answerA;
-	private String answerB;
-	private String answerC;
-	private String answerD;
-	private String correctAnswer;
+	private String choiceA;
+	private String choiceB;
+	private String choiceC;
+	private String choiceD;
+	private String answer;
 	private Integer valid = 1;
+	
 	public String getId() {
 		return id;
 	}
@@ -52,37 +53,36 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 	public void setQuestion(String question) {
 		this.question = question;
 	}
-	public String getAnswerA() {
-		return answerA;
+	public String getChoiceA() {
+		return choiceA;
 	}
-	public void setAnswerA(String answerA) {
-		this.answerA = answerA;
+	public void setChoiceA(String choiceA) {
+		this.choiceA = choiceA;
 	}
-	public String getAnswerB() {
-		return answerB;
+	public String getChoiceB() {
+		return choiceB;
 	}
-	public void setAnswerB(String answerB) {
-		this.answerB = answerB;
+	public void setChoiceB(String choiceB) {
+		this.choiceB = choiceB;
 	}
-	public String getAnswerC() {
-		return answerC;
+	public String getChoiceC() {
+		return choiceC;
 	}
-	public void setAnswerC(String answerC) {
-		this.answerC = answerC;
+	public void setChoiceC(String choiceC) {
+		this.choiceC = choiceC;
 	}
-	public String getAnswerD() {
-		return answerD;
+	public String getChoiceD() {
+		return choiceD;
 	}
-	public void setAnswerD(String answerD) {
-		this.answerD = answerD;
+	public void setChoiceD(String choiceD) {
+		this.choiceD = choiceD;
 	}
-	public String getCorrectAnswer() {
-		return correctAnswer;
+	public String getAnswer() {
+		return answer;
 	}
-	public void setCorrectAnswer(String correctAnswer) {
-		this.correctAnswer = correctAnswer;
+	public void setAnswer(String answer) {
+		this.answer = answer;
 	}
-	
 	public QuizEntity getQuiz() {
 		return quiz;
 	}
@@ -112,11 +112,12 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 		public static final String ID_FIELD = "id";
 		public static final String QUIZ_FIELD = "quiz";
 		public static final String QUESTION_FIELD = "question";
-		public static final String ANSWER_A_FIELD = "answerA";
-		public static final String ANSWER_B_FIELD = "answerB";
-		public static final String ANSWER_C_FIELD = "answerC";
-		public static final String ANSWER_D_FIELD = "answerD";
-		public static final String CORRECT_ANSWER_FIELD = "correctAnswer";
+		public static final String CHOICE_A_FIELD = "choiceA";
+		public static final String CHOICE_B_FIELD = "choiceB";
+		public static final String CHOICE_C_FIELD = "choiceC";
+		public static final String CHOICE_D_FIELD = "choiceD";
+		public static final String ANSWER_FIELD = "answer";
+		public static final String CREATED_DATE_FIELD = "createdDate";
 		public static final String VALID_FIELD = "valid";
 		public static final String JSON_FILTER = "jsonFilterQuestion";
 	}
