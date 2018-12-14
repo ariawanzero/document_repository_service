@@ -1,10 +1,10 @@
 package com.asdp.entity;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,7 +15,10 @@ import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import com.asdp.util.JsonUtil;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Entity(name = "Quiz")
 @Table(name = "quiz")
@@ -121,8 +124,12 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	public void setNameFileJson(String nameFileJson) {
 		this.nameFileJson = nameFileJson;
 	}
-
-	public List<String> getNameFile() {
+	
+	@SuppressWarnings("unchecked")
+	public List<String> getNameFile() throws JsonParseException, JsonMappingException, IOException {
+		if(getNameFileJson() != null) {
+			this.nameFile = JsonUtil.parseJson(getNameFileJson(), List.class);
+		}
 		return nameFile;
 	}
 

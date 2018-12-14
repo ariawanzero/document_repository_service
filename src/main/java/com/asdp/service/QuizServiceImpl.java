@@ -1,6 +1,8 @@
 package com.asdp.service;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +61,7 @@ import com.asdp.util.SystemConstant.ValidFlag;
 import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.SystemRestConstant.QuizConstant;
 import com.asdp.util.UserException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import liquibase.util.file.FilenameUtils;
@@ -214,6 +217,15 @@ public class QuizServiceImpl implements QuizService{
 	@Override
 	public String findOneById(String id) throws Exception {
 		QuizEntity materi = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "Quiz not found"));
+		Calendar calStart = Calendar.getInstance();
+		Calendar calEnd = Calendar.getInstance();
+		calStart.setTime(materi.getStartDate());
+		calStart.add(Calendar.HOUR, 7);
+		materi.setStartDate(calStart.getTime());
+
+		calEnd.setTime(materi.getEndDate());
+		calEnd.add(Calendar.HOUR, 7);
+		materi.setEndDate(calEnd.getTime());
 		
 		if(materi.getNameFileJson() != null) {
 			materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
@@ -237,6 +249,8 @@ public class QuizServiceImpl implements QuizService{
 		BeanUtils.copyProperties(principal, users);
 		
 		QuizEntity toUpdate = request;
+		Calendar calStart = Calendar.getInstance();
+		Calendar calEnd = Calendar.getInstance();
 		if (request == null || StringFunction.isEmpty(request.getName())) {
 			throw new UserException("400", "Quiz Name is mandatory !");
 		}
@@ -251,12 +265,33 @@ public class QuizServiceImpl implements QuizService{
 			} else {
 				toUpdate = existUser.get();
 			}
+			request.setNameFileJson(toUpdate.getNameFileJson());
+			
+			if(!request.getName().equals(toUpdate.getName())) {
+				request.setNameFileJson(this.changeNameFile(toUpdate.getNameFile(), request.getName()));
+			}
 			
 			BeanUtils.copyProperties(request, toUpdate);
+			
+			calStart.setTime(toUpdate.getStartDate());
+			calStart.add(Calendar.HOUR, -7);
+			toUpdate.setStartDate(calStart.getTime());
+
+			calEnd.setTime(toUpdate.getEndDate());
+			calEnd.add(Calendar.HOUR, -7);
+			toUpdate.setEndDate(calEnd.getTime());
 
 			toUpdate.setModifiedBy(users.getUsername());
 			toUpdate.setModifiedDate(new Date());
 		}else {
+			calStart.setTime(toUpdate.getStartDate());
+			calStart.add(Calendar.HOUR, -7);
+			toUpdate.setStartDate(calStart.getTime());
+
+			calEnd.setTime(toUpdate.getEndDate());
+			calEnd.add(Calendar.HOUR, -7);
+			toUpdate.setEndDate(calEnd.getTime());
+			
 			toUpdate.setCreatedBy(users.getUsername());
 			toUpdate.setCreatedDate(new Date());
 		}
@@ -265,6 +300,30 @@ public class QuizServiceImpl implements QuizService{
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
+	}
+	
+	public String changeNameFile(List<String> filename, String nameQuiz) throws JsonProcessingException {
+		int i = 0;
+		List<String> newName = new ArrayList<>();
+		for(String file : filename) {
+			try {
+				Resource source = this.download(file);
+				File files = source.getFile();
+				String name = nameQuiz
+						.concat("-")
+						.concat(String.valueOf(i + 1))
+						.concat(".")
+						.concat(FilenameUtils.getExtension(files.getName()));
+				
+				storageService.changeName(files, name);
+				newName.add(name);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			i++;
+		}
+		
+		return JsonUtil.generateJson(newName);
 	}
 	
 	@Override
