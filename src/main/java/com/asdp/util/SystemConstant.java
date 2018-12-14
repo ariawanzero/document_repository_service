@@ -198,6 +198,7 @@ public class SystemConstant {
 		public static final int VALID = 1;
 		public static final String INVALID_STR = "Invalid";
 		public static final String VALID_STR = "Valid";
+		public static final boolean TRUE_BOOL = true;
 		public static final Map<Integer, String> validFlagMap = new HashMap<>();
 
 		static {
@@ -251,7 +252,7 @@ public class SystemConstant {
 		public static final String EXT_PDF = ".pdf";
 
 		public static final String PATH = "document";
-		public static final String URL_PREVIEW = "http://178.128.216.198:8081";
+		public static final String URL_PREVIEW = "http://localhost:8081";
 		public static final String VALID_SUFFIX 	= "-valid";
 		public static final String INVALID_SUFFIX	= "-invalid";
 		public static final String PROCESSED_SUFFIX 	= "-processed";

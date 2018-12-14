@@ -23,7 +23,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         	.csrf().disable()
 			.anonymous().disable()
 	        .authorizeRequests()
-	        .antMatchers("/users/**", "/materi/**").authenticated()
+	        .antMatchers("/users/**", "/materi/**", "/quiz/**").authenticated()
 	        .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
 	}
 	

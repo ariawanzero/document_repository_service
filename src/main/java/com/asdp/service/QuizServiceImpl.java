@@ -39,6 +39,7 @@ import com.asdp.repository.EmailRepository;
 import com.asdp.repository.QuestionRepository;
 import com.asdp.repository.QuizRepository;
 import com.asdp.repository.ResultQuizRepository;
+import com.asdp.repository.UserRepository;
 import com.asdp.request.QuestionRequest;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.util.CommonPageUtil;
@@ -53,6 +54,7 @@ import com.asdp.util.JsonUtil;
 import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
 import com.asdp.util.SystemConstant.UploadConstants;
+import com.asdp.util.SystemConstant.UserRoleConstants;
 import com.asdp.util.SystemConstant.ValidFlag;
 import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.SystemRestConstant.QuizConstant;
@@ -85,6 +87,9 @@ public class QuizServiceImpl implements QuizService{
 	
 	@Autowired
 	private EmailRepository emailRepo;
+	
+	@Autowired
+	private UserRepository userRepo;
 	
 	@PersistenceContext
 	EntityManager em;
@@ -134,7 +139,11 @@ public class QuizServiceImpl implements QuizService{
 
 	@Override
 	public String searchMateriQuiz(QuizSearchRequest request) throws Exception {
-		//List<QuizEntity> listExpired = new ArrayList<>();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
 		
 		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
 				new Sort(Sort.Direction.ASC, QuizEntity.Constant.NAME_FIELD));
@@ -148,11 +157,20 @@ public class QuizServiceImpl implements QuizService{
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.NAME_FIELD)),
 						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
 			}
-			
+
 			if (!StringFunction.isEmpty(request.getDivisi())) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + request.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
+			
+			if (!user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && !user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN) 
+					&& !StringFunction.isEmpty(user.getDivisi())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.equal(root.<String>get(QuizEntity.Constant.PUBLISH_FIELD),
+						ValidFlag.TRUE_BOOL));
+			}			
+			
 			
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
@@ -344,6 +362,10 @@ public class QuizServiceImpl implements QuizService{
 		if(DateTimeFunction.getTimeExpired(quiz.getStartDate())){
 			throw new UserException("400", "Start date has passed, please edit start date !");
 		}
+		int size = questionRepo.findByQuiz(quiz).size();
+		if(	quiz.getTotalQuiz() > size) {
+			throw new UserException("400", "Cannot publish, question not equals or greater than set total quiz");
+		}
 		quiz.setPublish(true);
 		quizRepo.save(quiz);
 		
@@ -408,4 +430,5 @@ public class QuizServiceImpl implements QuizService{
 		
 		return writer.writeValueAsString(restResponse);
 	}
+
 }
