@@ -30,6 +30,7 @@ public class ResultQuizEntity implements Serializable {
 	private String id;
 	private String username;
 	private String quiz;
+	private Integer score;
 	
 	@Transient
 	private Map<String, String> questionAnswer;
@@ -80,6 +81,14 @@ public class ResultQuizEntity implements Serializable {
 		this.questionAnswerJson = questionAnswerJson;
 	}
 	
+	public Integer getScore() {
+		return score;
+	}
+	public void setScore(Integer score) {
+		this.score = score;
+	}
+
+
 	public static class Constant {
 		private Constant() {}
 		public static final String ID_FIELD = "id";
@@ -87,6 +96,7 @@ public class ResultQuizEntity implements Serializable {
 		public static final String QUESTION_ANSWER_FIELD = "questionAnswer";
 		public static final String QUESTION_ANSWER_JSON_FIELD = "questionAnswerJson";
 		public static final String QUESTIONS_JSON_FIELD = "questions";
+		public static final String SCORE_FIELD = "score";
 		public static final String JSON_FILTER = "jsonFilterResultQuiz";
 	}
 

@@ -2,9 +2,11 @@ package com.asdp.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.asdp.entity.QuizEntity;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.service.QuizService;
 import com.asdp.util.SystemRestConstant;
@@ -19,5 +21,10 @@ public class QuizController {
 	@PostMapping(SystemRestConstant.QuizConstant.SEARCH_QUIZ_ADDR)
 	public String searchHistoryLogin() throws Exception {				
 		return quizService.searchMateriQuiz(new QuizSearchRequest());
+	}
+
+	@PostMapping(SystemRestConstant.QuizConstant.START_QUIZ_ADDR)
+	public String startQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
+		return quizService.startQuiz(request.getId());
 	}
 }

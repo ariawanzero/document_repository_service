@@ -111,6 +111,7 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 		private Constant() {}
 		public static final String ID_FIELD = "id";
 		public static final String QUIZ_FIELD = "quiz";
+		public static final String QUIZ_ID_FIELD = "quizId";
 		public static final String QUESTION_FIELD = "question";
 		public static final String CHOICE_A_FIELD = "choiceA";
 		public static final String CHOICE_B_FIELD = "choiceB";

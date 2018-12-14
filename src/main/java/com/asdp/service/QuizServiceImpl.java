@@ -351,7 +351,8 @@ public class QuizServiceImpl implements QuizService{
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD),
-				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD));
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.QUIZ_ID_FIELD));
 
 		return writter.writeValueAsString(response);
 	}

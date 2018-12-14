@@ -58,8 +58,4 @@ public class MateriController {
 		return quizService.saveQuizWithQuestion(request);
 	}
 	
-	@PostMapping(SystemRestConstant.QuizConstant.START_QUIZ_ADDR)
-	public String startQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
-		return quizService.startQuiz(request.getId());
-	}
 }
