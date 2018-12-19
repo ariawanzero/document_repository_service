@@ -33,6 +33,10 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 	
 	@Transient
 	private String quizId;
+	@Transient
+	private String answerUser;
+	@Transient
+	private boolean finish;
 	
 	private String choiceA;
 	private String choiceB;
@@ -94,6 +98,12 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 		return valid;
 	}
 	
+	public String getAnswerUser() {
+		return answerUser;
+	}
+	public void setAnswerUser(String answerUser) {
+		this.answerUser = answerUser;
+	}
 	public void setValid(Integer valid) {
 		this.valid = valid;
 	}
@@ -107,6 +117,14 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 		this.quizId = quizId;
 	}
 
+	public boolean isFinish() {
+		return finish;
+	}
+	public void setFinish(boolean finish) {
+		this.finish = finish;
+	}
+
+
 	public static class Constant {
 		private Constant() {}
 		public static final String ID_FIELD = "id";
@@ -118,6 +136,7 @@ public class QuestionEntity extends AuditEntity implements Serializable {
 		public static final String CHOICE_C_FIELD = "choiceC";
 		public static final String CHOICE_D_FIELD = "choiceD";
 		public static final String ANSWER_FIELD = "answer";
+		public static final String FINISH_FIELD = "finish";
 		public static final String CREATED_DATE_FIELD = "createdDate";
 		public static final String VALID_FIELD = "valid";
 		public static final String JSON_FILTER = "jsonFilterQuestion";

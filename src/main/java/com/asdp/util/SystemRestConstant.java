@@ -33,6 +33,8 @@ public class SystemRestConstant {
 		public static final String SAVE_QUESTION_ADDR = "/saveQuestion";
 		public static final String DOWNLOAD_FILE_ADDR = "/downloadFile";
 		public static final String START_QUIZ_ADDR = "/startQuiz";
+		public static final String ANSWER_QUIZ_ADDR = "/answerQuiz";
+		public static final String FINISH_QUIZ_ADDR = "/finishQuiz";
 		public static final String PUBLISH_QUIZ_ADDR = "/publishQuiz";
 	}
 	

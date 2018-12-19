@@ -353,7 +353,6 @@ public class QuizServiceImpl implements QuizService{
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public String startQuiz(String id) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -392,28 +391,71 @@ public class QuizServiceImpl implements QuizService{
 			
 			resultQuizRepo.save(resultQuiz);
 		} else {
-			mapQuestion = JsonUtil.parseJson(resultQuiz.getQuestionAnswerJson(), HashMap.class);
-			ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
-			
-			CriteriaBuilder cb = em.getCriteriaBuilder();
-			CriteriaQuery<QuestionEntity> query = cb.createQuery(QuestionEntity.class);
-			Root<QuestionEntity> root = query.from(QuestionEntity.class);
-			Expression<String> parentExpression = root.get(QuestionEntity.Constant.ID_FIELD);			
-			Predicate parentPredicate = parentExpression.in(listId);
-			query.select(root).where(parentPredicate);
-
-			questions = em.createQuery(query).getResultList();
+			questions = this.getListQuestions(resultQuiz.getQuestionAnswer());
 			resultQuiz.setQuestions(questions);
 		}
 		
 		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
-				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD),
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
 				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
-						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.QUIZ_ID_FIELD));
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
 
 		return writter.writeValueAsString(response);
+	}
+	
+	@Override
+	public String answerQuiz(QuestionEntity question) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+
+		ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), question.getQuizId());
+		List<QuestionEntity> questions;
+		Map<String, String> mapQuestion = new HashMap<>();
+		
+		if(resultQuiz != null) {
+			mapQuestion = resultQuiz.getQuestionAnswer();
+			mapQuestion.put(question.getId(), question.getAnswerUser());
+			String mapQuesions = JsonUtil.generateJson(mapQuestion);
+			resultQuiz.setQuestionAnswerJson(mapQuesions);
+			resultQuizRepo.save(resultQuiz);
+			
+			questions = this.getListQuestions(mapQuestion);
+			resultQuiz.setQuestions(questions);
+		}
+		
+		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
+		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
+
+		return writter.writeValueAsString(response);
+	}
+	
+	public List<QuestionEntity> getListQuestions(Map<String, String> mapQuestion){
+		
+		ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<QuestionEntity> query = cb.createQuery(QuestionEntity.class);
+		Root<QuestionEntity> root = query.from(QuestionEntity.class);
+		Expression<String> parentExpression = root.get(QuestionEntity.Constant.ID_FIELD);			
+		Predicate parentPredicate = parentExpression.in(listId);
+		query.select(root).where(parentPredicate).orderBy(cb.asc(root.get(QuestionEntity.Constant.ID_FIELD)));
+
+		List<QuestionEntity> questions = em.createQuery(query).getResultList();
+		for(QuestionEntity question : questions) {
+			question.setAnswerUser(mapQuestion.get(question.getId().trim()));
+		}
+		
+		return questions;
 	}
 
 	@Override

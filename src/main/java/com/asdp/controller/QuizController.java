@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.asdp.entity.QuestionEntity;
 import com.asdp.entity.QuizEntity;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.service.QuizService;
@@ -26,5 +27,15 @@ public class QuizController {
 	@PostMapping(SystemRestConstant.QuizConstant.START_QUIZ_ADDR)
 	public String startQuizWithQuestions(@RequestBody QuizEntity request) throws Exception {
 		return quizService.startQuiz(request.getId());
+	}
+	
+	@PostMapping(SystemRestConstant.QuizConstant.ANSWER_QUIZ_ADDR)
+	public String answerQuizWithQuestions(@RequestBody QuestionEntity request) throws Exception {
+		return quizService.answerQuiz(request);
+	}
+	
+	@PostMapping(SystemRestConstant.QuizConstant.FINISH_QUIZ_ADDR)
+	public String finishQuizWithQuestions(@RequestBody QuestionEntity request) throws Exception {
+		return quizService.answerQuiz(request);
 	}
 }
