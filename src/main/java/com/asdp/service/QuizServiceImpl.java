@@ -226,24 +226,25 @@ public class QuizServiceImpl implements QuizService{
 			throw new UserException("400", "Quiz with that Name already exists !");
 		}
 		
-		if (StringFunction.isNotEmpty(request.getId())) {
-			Optional<QuizEntity> existUser = quizRepo.findById(request.getId());
-			if (existUser == null) {
-				throw new UserException("400", "Quiz not found !");
-			} else {
-				toUpdate = existUser.get();
-			}
-			
-			BeanUtils.copyProperties(request, toUpdate);
-
-			toUpdate.setModifiedBy(users.getUsername());
-			toUpdate.setModifiedDate(new Date());
-		}else {
-			toUpdate.setCreatedBy(users.getUsername());
-			toUpdate.setCreatedDate(new Date());
-		}
-		
-		quizRepo.save(toUpdate);
+		System.out.println(toUpdate.getStartDate());
+//		if (StringFunction.isNotEmpty(request.getId())) {
+//			Optional<QuizEntity> existUser = quizRepo.findById(request.getId());
+//			if (existUser == null) {
+//				throw new UserException("400", "Quiz not found !");
+//			} else {
+//				toUpdate = existUser.get();
+//			}
+//			
+//			BeanUtils.copyProperties(request, toUpdate);
+//
+//			toUpdate.setModifiedBy(users.getUsername());
+//			toUpdate.setModifiedDate(new Date());
+//		}else {
+//			toUpdate.setCreatedBy(users.getUsername());
+//			toUpdate.setCreatedDate(new Date());
+//		}
+//		
+//		quizRepo.save(toUpdate);
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
