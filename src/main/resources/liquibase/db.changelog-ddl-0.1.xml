@@ -187,4 +187,15 @@
 			<column name="question_answer_json" type="MEDIUMTEXT" />
 		</createTable>
 	</changeSet>
+	<changeSet author="SEPTA" id="0.0-2" failOnError="true">
+		<addColumn tableName="result_quiz">
+			<column name="score" type="INTEGER" />
+		</addColumn>
+		<modifyDataType columnName="description"  newDataType="LONGTEXT" tableName="quiz"/>
+		<modifyDataType columnName="question"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choicea"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choiceb"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choicec"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choiced"  newDataType="LONGTEXT" tableName="question"/>
+	</changeSet>
 </databaseChangeLog>

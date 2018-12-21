@@ -1,5 +1,6 @@
 package com.asdp.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -13,8 +14,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.asdp.util.UserException;
 import com.asdp.util.SystemConstant.UploadConstants;
+import com.asdp.util.UserException;
 
 public class StorageServiceImpl implements StorageService {
 	
@@ -25,6 +26,15 @@ public class StorageServiceImpl implements StorageService {
 	public void store(MultipartFile file, String name) {
 		try {
 			Files.copy(file.getInputStream(), this.rootLocation.resolve(name));
+		} catch (Exception e) {
+			throw new RuntimeException("FAIL!");
+		}
+	}
+	
+	@Override
+	public void changeName(File file, String name) {
+		try {
+			file.renameTo(new File(this.rootLocation.resolve(name).toString()));
 		} catch (Exception e) {
 			throw new RuntimeException("FAIL!");
 		}

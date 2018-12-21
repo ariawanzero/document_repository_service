@@ -1,6 +1,8 @@
 package com.asdp.service;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ import com.asdp.repository.EmailRepository;
 import com.asdp.repository.QuestionRepository;
 import com.asdp.repository.QuizRepository;
 import com.asdp.repository.ResultQuizRepository;
+import com.asdp.repository.UserRepository;
 import com.asdp.request.QuestionRequest;
 import com.asdp.request.QuizSearchRequest;
 import com.asdp.util.CommonPageUtil;
@@ -53,10 +56,12 @@ import com.asdp.util.JsonUtil;
 import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
 import com.asdp.util.SystemConstant.UploadConstants;
+import com.asdp.util.SystemConstant.UserRoleConstants;
 import com.asdp.util.SystemConstant.ValidFlag;
 import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.SystemRestConstant.QuizConstant;
 import com.asdp.util.UserException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import liquibase.util.file.FilenameUtils;
@@ -85,6 +90,9 @@ public class QuizServiceImpl implements QuizService{
 	
 	@Autowired
 	private EmailRepository emailRepo;
+	
+	@Autowired
+	private UserRepository userRepo;
 	
 	@PersistenceContext
 	EntityManager em;
@@ -134,7 +142,11 @@ public class QuizServiceImpl implements QuizService{
 
 	@Override
 	public String searchMateriQuiz(QuizSearchRequest request) throws Exception {
-		//List<QuizEntity> listExpired = new ArrayList<>();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
 		
 		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
 				new Sort(Sort.Direction.ASC, QuizEntity.Constant.NAME_FIELD));
@@ -148,11 +160,20 @@ public class QuizServiceImpl implements QuizService{
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.NAME_FIELD)),
 						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
 			}
-			
+
 			if (!StringFunction.isEmpty(request.getDivisi())) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + request.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
+			
+			if (!user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && !user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN) 
+					&& !StringFunction.isEmpty(user.getDivisi())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(QuizEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.equal(root.<String>get(QuizEntity.Constant.PUBLISH_FIELD),
+						ValidFlag.TRUE_BOOL));
+			}			
+			
 			
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
@@ -196,6 +217,15 @@ public class QuizServiceImpl implements QuizService{
 	@Override
 	public String findOneById(String id) throws Exception {
 		QuizEntity materi = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "Quiz not found"));
+		Calendar calStart = Calendar.getInstance();
+		Calendar calEnd = Calendar.getInstance();
+		calStart.setTime(materi.getStartDate());
+		calStart.add(Calendar.HOUR, 7);
+		materi.setStartDate(calStart.getTime());
+
+		calEnd.setTime(materi.getEndDate());
+		calEnd.add(Calendar.HOUR, 7);
+		materi.setEndDate(calEnd.getTime());
 		
 		if(materi.getNameFileJson() != null) {
 			materi.setNameFile(JsonUtil.parseJson(materi.getNameFileJson(), ArrayList.class));
@@ -219,6 +249,8 @@ public class QuizServiceImpl implements QuizService{
 		BeanUtils.copyProperties(principal, users);
 		
 		QuizEntity toUpdate = request;
+		Calendar calStart = Calendar.getInstance();
+		Calendar calEnd = Calendar.getInstance();
 		if (request == null || StringFunction.isEmpty(request.getName())) {
 			throw new UserException("400", "Quiz Name is mandatory !");
 		}
@@ -226,28 +258,72 @@ public class QuizServiceImpl implements QuizService{
 			throw new UserException("400", "Quiz with that Name already exists !");
 		}
 		
-		System.out.println(toUpdate.getStartDate());
-//		if (StringFunction.isNotEmpty(request.getId())) {
-//			Optional<QuizEntity> existUser = quizRepo.findById(request.getId());
-//			if (existUser == null) {
-//				throw new UserException("400", "Quiz not found !");
-//			} else {
-//				toUpdate = existUser.get();
-//			}
-//			
-//			BeanUtils.copyProperties(request, toUpdate);
-//
-//			toUpdate.setModifiedBy(users.getUsername());
-//			toUpdate.setModifiedDate(new Date());
-//		}else {
-//			toUpdate.setCreatedBy(users.getUsername());
-//			toUpdate.setCreatedDate(new Date());
-//		}
-//		
-//		quizRepo.save(toUpdate);
+		if (StringFunction.isNotEmpty(request.getId())) {
+			Optional<QuizEntity> existUser = quizRepo.findById(request.getId());
+			if (existUser == null) {
+				throw new UserException("400", "Quiz not found !");
+			} else {
+				toUpdate = existUser.get();
+			}
+			request.setNameFileJson(toUpdate.getNameFileJson());
+			
+			if(!request.getName().equals(toUpdate.getName())) {
+				request.setNameFileJson(this.changeNameFile(toUpdate.getNameFile(), request.getName()));
+			}
+			
+			BeanUtils.copyProperties(request, toUpdate);
+			
+			calStart.setTime(toUpdate.getStartDate());
+			calStart.add(Calendar.HOUR, -7);
+			toUpdate.setStartDate(calStart.getTime());
+
+			calEnd.setTime(toUpdate.getEndDate());
+			calEnd.add(Calendar.HOUR, -7);
+			toUpdate.setEndDate(calEnd.getTime());
+
+			toUpdate.setModifiedBy(users.getUsername());
+			toUpdate.setModifiedDate(new Date());
+		}else {
+			calStart.setTime(toUpdate.getStartDate());
+			calStart.add(Calendar.HOUR, -7);
+			toUpdate.setStartDate(calStart.getTime());
+
+			calEnd.setTime(toUpdate.getEndDate());
+			calEnd.add(Calendar.HOUR, -7);
+			toUpdate.setEndDate(calEnd.getTime());
+			
+			toUpdate.setCreatedBy(users.getUsername());
+			toUpdate.setCreatedDate(new Date());
+		}
+		
+		quizRepo.save(toUpdate);
 		
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
+	}
+	
+	public String changeNameFile(List<String> filename, String nameQuiz) throws JsonProcessingException {
+		int i = 0;
+		List<String> newName = new ArrayList<>();
+		for(String file : filename) {
+			try {
+				Resource source = this.download(file);
+				File files = source.getFile();
+				String name = nameQuiz
+						.concat("-")
+						.concat(String.valueOf(i + 1))
+						.concat(".")
+						.concat(FilenameUtils.getExtension(files.getName()));
+				
+				storageService.changeName(files, name);
+				newName.add(name);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			i++;
+		}
+		
+		return JsonUtil.generateJson(newName);
 	}
 	
 	@Override
@@ -277,7 +353,6 @@ public class QuizServiceImpl implements QuizService{
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public String startQuiz(String id) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -316,27 +391,71 @@ public class QuizServiceImpl implements QuizService{
 			
 			resultQuizRepo.save(resultQuiz);
 		} else {
-			mapQuestion = JsonUtil.parseJson(resultQuiz.getQuestionAnswerJson(), HashMap.class);
-			ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
-			
-			CriteriaBuilder cb = em.getCriteriaBuilder();
-			CriteriaQuery<QuestionEntity> query = cb.createQuery(QuestionEntity.class);
-			Root<QuestionEntity> root = query.from(QuestionEntity.class);
-			Expression<String> parentExpression = root.get(QuestionEntity.Constant.ID_FIELD);			
-			Predicate parentPredicate = parentExpression.in(listId);
-			query.select(root).where(parentPredicate);
-
-			questions = em.createQuery(query).getResultList();
+			questions = this.getListQuestions(resultQuiz.getQuestionAnswer());
 			resultQuiz.setQuestions(questions);
 		}
 		
 		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
-				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD),
-				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD));
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
 
 		return writter.writeValueAsString(response);
+	}
+	
+	@Override
+	public String answerQuiz(QuestionEntity question) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+
+		ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), question.getQuizId());
+		List<QuestionEntity> questions;
+		Map<String, String> mapQuestion = new HashMap<>();
+		
+		if(resultQuiz != null) {
+			mapQuestion = resultQuiz.getQuestionAnswer();
+			mapQuestion.put(question.getId(), question.getAnswerUser());
+			String mapQuesions = JsonUtil.generateJson(mapQuestion);
+			resultQuiz.setQuestionAnswerJson(mapQuesions);
+			resultQuizRepo.save(resultQuiz);
+			
+			questions = this.getListQuestions(mapQuestion);
+			resultQuiz.setQuestions(questions);
+		}
+		
+		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
+		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
+
+		return writter.writeValueAsString(response);
+	}
+	
+	public List<QuestionEntity> getListQuestions(Map<String, String> mapQuestion){
+		
+		ArrayList<String> listId = new ArrayList<String>(mapQuestion.keySet());
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<QuestionEntity> query = cb.createQuery(QuestionEntity.class);
+		Root<QuestionEntity> root = query.from(QuestionEntity.class);
+		Expression<String> parentExpression = root.get(QuestionEntity.Constant.ID_FIELD);			
+		Predicate parentPredicate = parentExpression.in(listId);
+		query.select(root).where(parentPredicate).orderBy(cb.asc(root.get(QuestionEntity.Constant.ID_FIELD)));
+
+		List<QuestionEntity> questions = em.createQuery(query).getResultList();
+		for(QuestionEntity question : questions) {
+			question.setAnswerUser(mapQuestion.get(question.getId().trim()));
+		}
+		
+		return questions;
 	}
 
 	@Override
@@ -344,6 +463,10 @@ public class QuizServiceImpl implements QuizService{
 		QuizEntity quiz = quizRepo.findById(request.getId()).orElseThrow(() -> new UserException("400", "Quiz not found"));
 		if(DateTimeFunction.getTimeExpired(quiz.getStartDate())){
 			throw new UserException("400", "Start date has passed, please edit start date !");
+		}
+		int size = questionRepo.findByQuiz(quiz).size();
+		if(	quiz.getTotalQuiz() > size) {
+			throw new UserException("400", "Cannot publish, question not equals or greater than set total quiz");
 		}
 		quiz.setPublish(true);
 		quizRepo.save(quiz);
@@ -409,4 +532,5 @@ public class QuizServiceImpl implements QuizService{
 		
 		return writer.writeValueAsString(restResponse);
 	}
+
 }

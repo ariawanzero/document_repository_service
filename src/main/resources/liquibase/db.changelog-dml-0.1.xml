@@ -353,4 +353,12 @@
 			</column>
 		</insert>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-7" failOnError="true">
+		<delete tableName="sys_menu_role">
+        	<where>id = 16</where>
+    	</delete>
+		<delete tableName="sys_menu_role">
+        	<where>id = 17</where>
+    	</delete>
+	</changeSet>
 </databaseChangeLog>
