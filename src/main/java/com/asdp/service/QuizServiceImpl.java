@@ -422,6 +422,9 @@ public class QuizServiceImpl implements QuizService{
 			mapQuestion.put(question.getId(), question.getAnswerUser());
 			String mapQuesions = JsonUtil.generateJson(mapQuestion);
 			resultQuiz.setQuestionAnswerJson(mapQuesions);
+			if(question.isFinish()) {
+				resultQuiz.setScore((int)getScore(mapQuestion));
+			}
 			resultQuizRepo.save(resultQuiz);
 			
 			questions = this.getListQuestions(mapQuestion);
@@ -437,6 +440,24 @@ public class QuizServiceImpl implements QuizService{
 						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
 
 		return writter.writeValueAsString(response);
+	}
+	
+	public double getScore(Map<String, String> mapQuestion) {
+		double finalScore = 0;
+		int correct = 0;
+		for(Map.Entry<String, String> entry : mapQuestion.entrySet()) {
+			Optional<QuestionEntity> question = questionRepo.findById(entry.getKey());
+			QuestionEntity questionn = question.get();
+			if(questionn.getAnswer().equals(entry.getValue().trim())) {
+				finalScore = finalScore + (100/mapQuestion.size());
+				correct++;
+			}
+		}
+		if(correct == mapQuestion.size()) {
+			return 100;
+		}else {
+			return finalScore;
+		}
 	}
 	
 	public List<QuestionEntity> getListQuestions(Map<String, String> mapQuestion){
