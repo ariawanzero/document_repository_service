@@ -1,6 +1,9 @@
 package com.asdp.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +21,8 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -181,6 +186,12 @@ public class QuizServiceImpl implements QuizService{
 		};
 
 		Page<QuizEntity> paging = quizRepo.findAll(spec, pageable);
+		
+		paging.getContent().stream().map(quiz -> {
+			quiz.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
+					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			return quiz;
+		}).collect(Collectors.toList());
 
 		CommonResponsePaging<QuizEntity> restResponse = comGen
 				.generateCommonResponsePaging(new CommonPaging<>(paging));
@@ -619,6 +630,43 @@ public class QuizServiceImpl implements QuizService{
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.USERNAME_FIELD));
 
 		return writer.writeValueAsString(restResponse);
+	}
+
+	@Override
+	public ByteArrayOutputStream downloadResulQuiz(String id) throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		PrintWriter printWriter = new PrintWriter(bos);
+		List<ResultQuizEntity> resultQuiz = resultQuizRepo.findByQuiz(id);
+		
+		boolean printHeader = true;
+		try (CSVPrinter printer = new CSVPrinter(printWriter, CSVFormat.RFC4180)) {
+			if(printHeader) {
+				printer.printRecord(buildHeader());
+			}
+			resultQuiz.forEach(data -> {
+				List<String> record = new ArrayList<>();
+				UserEntity user = userRepo.findByUsername(data.getUsername());
+				record.add(user.getName());
+				record.add(user.getDivisi());
+				record.add(String.valueOf(data.getScore()));
+				try {
+					printer.printRecord(record);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
+		}
+		
+		return bos;
+	}
+	
+	public List<String> buildHeader(){
+		List<String> header = new ArrayList<>();
+		header.add("Name");
+		header.add("Divisi");
+		header.add("Score");
+		
+		return header;
 	}
 
 }

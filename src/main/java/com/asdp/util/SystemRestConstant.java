@@ -40,6 +40,7 @@ public class SystemRestConstant {
 		public static final String RESULT_QUIZ_CONTROLLER = "/result";
 		public static final String SEARCH_RESULT_QUIZ_CONTROLLER = "/searchResultQuiz";
 		public static final String DETAIL_RESULT_QUIZ_CONTROLLER = "/detailResultQuiz";
+		public static final String DOWNLOAD_RESULT_QUIZ_CONTROLLER = "/downloadResultQuiz";
 	}
 	
 	public static final class OpenFileConstant {

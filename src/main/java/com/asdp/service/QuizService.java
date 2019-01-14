@@ -1,5 +1,7 @@
 package com.asdp.service;
 
+import java.io.ByteArrayOutputStream;
+
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,4 +24,5 @@ public interface QuizService {
 	String answerQuiz(QuestionEntity question) throws Exception;
 	String publishQuiz(QuizEntity request) throws Exception;
 	String detailResultQuiz(ResultQuizSearchRequest request) throws Exception;
+	ByteArrayOutputStream downloadResulQuiz(String request) throws Exception;
 }
