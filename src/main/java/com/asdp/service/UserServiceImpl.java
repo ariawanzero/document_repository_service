@@ -203,6 +203,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		user.setUserRoleName(user.getUserRole().getRoleName());
 		user.setUserRoleId(user.getUserRole().getUserRoleCode());
+		user.setExpiredDate(DateTimeFunction.getDateMinus7Hour(user.getExpiredDate()));
 
 		CommonResponse<UserEntity> response = new CommonResponse<>(user);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
@@ -235,10 +236,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				toUpdate = existUser.get();
 			}
 			request.setPassword(toUpdate.getPassword());
+			request.setExpiredDate(DateTimeFunction.getDatePlus7Hour(request.getExpiredDate()));
 			BeanUtils.copyProperties(request, toUpdate);
 		}else{
 			String password = StringFunction.randomAlphaNumeric(7);
 			toUpdate.setPassword(PasswordUtils.encryptPassword(password));
+			toUpdate.setExpiredDate(DateTimeFunction.getDatePlus7Hour(toUpdate.getExpiredDate()));
 			Optional<EmailEntity> email = emailRepo.findById("NEWMEMBER");
 			EmailUtils.sendEmail(toUpdate.getUsername(), String.format(email.get().getBodyMessage(), toUpdate.getName(), toUpdate.getUsername(), password), email.get().getSubject());
 		}

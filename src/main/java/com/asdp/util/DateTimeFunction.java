@@ -710,4 +710,20 @@ public class DateTimeFunction {
 		return result;
 	}
 	
+	public static Date getDatePlus7Hour(Date change) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(change);
+		cal.add(Calendar.HOUR, 7);
+		
+		return cal.getTime();
+	}
+	
+	public static Date getDateMinus7Hour(Date change) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(change);
+		cal.add(Calendar.HOUR, -7);
+		
+		return cal.getTime();
+	}
+	
 }

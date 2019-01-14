@@ -7,10 +7,12 @@ import com.asdp.entity.QuestionEntity;
 import com.asdp.entity.QuizEntity;
 import com.asdp.request.QuestionRequest;
 import com.asdp.request.QuizSearchRequest;
+import com.asdp.request.ResultQuizSearchRequest;
 
 public interface QuizService {
 	Resource download(String nameFile) throws Exception;
 	String searchMateriQuiz(QuizSearchRequest request) throws Exception;
+	String searchResultQuiz(ResultQuizSearchRequest request) throws Exception;
 	String searchMateriQuestion(QuestionRequest request) throws Exception;
 	String findOneById(String id) throws Exception;
 	String saveHeader(QuizEntity request) throws Exception;
@@ -19,4 +21,5 @@ public interface QuizService {
 	String startQuiz(String id) throws Exception;
 	String answerQuiz(QuestionEntity question) throws Exception;
 	String publishQuiz(QuizEntity request) throws Exception;
+	String detailResultQuiz(ResultQuizSearchRequest request) throws Exception;
 }

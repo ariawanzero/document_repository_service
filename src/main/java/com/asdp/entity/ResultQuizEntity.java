@@ -38,6 +38,9 @@ public class ResultQuizEntity implements Serializable {
 	@Transient
 	private List<QuestionEntity> questions;
 	
+	@Transient
+	private String nameuser;
+	
 	private String questionAnswerJson;
 	
 	public String getId() {
@@ -88,6 +91,14 @@ public class ResultQuizEntity implements Serializable {
 		this.score = score;
 	}
 
+	public String getNameuser() {
+		return nameuser;
+	}
+	public void setNameuser(String nameuser) {
+		this.nameuser = nameuser;
+	}
+
+
 
 	public static class Constant {
 		private Constant() {}
@@ -96,6 +107,7 @@ public class ResultQuizEntity implements Serializable {
 		public static final String QUESTION_ANSWER_FIELD = "questionAnswer";
 		public static final String QUESTION_ANSWER_JSON_FIELD = "questionAnswerJson";
 		public static final String QUESTIONS_JSON_FIELD = "questions";
+		public static final String QUIZ_FIELD = "quiz";
 		public static final String SCORE_FIELD = "score";
 		public static final String JSON_FILTER = "jsonFilterResultQuiz";
 	}

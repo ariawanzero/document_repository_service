@@ -52,6 +52,9 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	
 	@Transient
 	private String urlPreview;
+	
+	@Transient
+	private Integer score;
 
 	public String getId() {
 		return id;
@@ -125,6 +128,14 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		this.nameFileJson = nameFileJson;
 	}
 	
+	public Integer getScore() {
+		return score;
+	}
+
+	public void setScore(Integer score) {
+		this.score = score;
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<String> getNameFile() throws JsonParseException, JsonMappingException, IOException {
 		if(getNameFileJson() != null) {
