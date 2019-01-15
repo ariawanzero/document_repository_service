@@ -2,6 +2,7 @@ package com.asdp.entity;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,9 @@ public class ResultQuizEntity implements Serializable {
 	
 	@Transient
 	private String quizName;
+
+	@Transient
+	private Date endDateQuiz;
 	
 	private String questionAnswerJson;
 	
@@ -107,6 +111,13 @@ public class ResultQuizEntity implements Serializable {
 		this.nameuser = nameuser;
 	}
 
+	public Date getEndDateQuiz() {
+		return endDateQuiz;
+	}
+	public void setEndDateQuiz(Date endDateQuiz) {
+		this.endDateQuiz = endDateQuiz;
+	}
+
 
 
 	public static class Constant {
@@ -118,6 +129,7 @@ public class ResultQuizEntity implements Serializable {
 		public static final String QUESTIONS_JSON_FIELD = "questions";
 		public static final String QUIZ_FIELD = "quiz";
 		public static final String SCORE_FIELD = "score";
+		public static final String END_DATE_FIELD = "endDateQuiz";
 		public static final String JSON_FILTER = "jsonFilterResultQuiz";
 	}
 

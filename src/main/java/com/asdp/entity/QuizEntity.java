@@ -52,6 +52,9 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	
 	@Transient
 	private String urlPreview;
+
+	@Transient
+	private boolean alreadyStart = false;
 	
 	@Transient
 	private Integer score;
@@ -62,6 +65,14 @@ public class QuizEntity extends AuditEntity implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public boolean isAlreadyStart() {
+		return alreadyStart;
+	}
+
+	public void setAlreadyStart(boolean alreadyStart) {
+		this.alreadyStart = alreadyStart;
 	}
 
 	public String getName() {

@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -188,10 +189,13 @@ public class QuizServiceImpl implements QuizService{
 		};
 
 		Page<QuizEntity> paging = quizRepo.findAll(spec, pageable);
-		
+
 		paging.getContent().stream().map(quiz -> {
 			quiz.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			if(quiz.getPublish() && DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
+				quiz.setAlreadyStart(true);
+			}
 			return quiz;
 		}).collect(Collectors.toList());
 
@@ -409,9 +413,9 @@ public class QuizServiceImpl implements QuizService{
 
 		QuizEntity quiz = quizRepo.findById(id).orElseThrow(() -> new UserException("400", "Quiz not found"));
 
-		/*if(quiz.getPassQuiz() != 1 || !DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
+		if(quiz.getPublish() && !DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
 			throw new UserException("400", "the quiz hasn't started yet !");
-		}*/
+		}
 
 		ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
 		List<QuestionEntity> questions;
@@ -470,21 +474,28 @@ public class QuizServiceImpl implements QuizService{
 
 		Page<ResultQuizEntity> paging = resultQuizRepo.findAll(spec, pageable);
 
-			paging.getContent().stream().map(resultQuiz -> {
-				Optional<QuizEntity> quiz = quizRepo.findById(resultQuiz.getQuiz());
-				QuizEntity quizEn = quiz.get();
-				resultQuiz.setQuizName(quizEn.getName());
-				try {
-					resultQuiz.setQuestions(this.getListQuestions(resultQuiz.getQuestionAnswer()));
-				} catch (JsonParseException e) {
-					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				return resultQuiz;
-			}).collect(Collectors.toList());
+		paging.getContent().stream().map(resultQuiz -> {
+			Optional<QuizEntity> quiz = quizRepo.findById(resultQuiz.getQuiz());
+			QuizEntity quizEn = quiz.get();
+			resultQuiz.setQuizName(quizEn.getName());
+			resultQuiz.setEndDateQuiz(quizEn.getEndDate());
+			try {
+				resultQuiz.setQuestions(this.getListQuestions(resultQuiz.getQuestionAnswer()));
+			} catch (JsonParseException e) {
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return resultQuiz;
+		}).collect(Collectors.toList());
+		
+		paging = PageableExecutionUtils.getPage(
+	    		paging.getContent().stream().filter(quiz -> DateTimeFunction.getTimeExpired(quiz.getEndDateQuiz()))
+				.collect(Collectors.toList()),
+				pageable,
+				paging::getTotalElements);
 
 		CommonResponsePaging<ResultQuizEntity> restResponse = comGen
 				.generateCommonResponsePaging(new CommonPaging<>(paging));
@@ -492,13 +503,13 @@ public class QuizServiceImpl implements QuizService{
 		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
 				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
-						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD, ResultQuizEntity.Constant.END_DATE_FIELD),
 				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
 						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
 
 		return writer.writeValueAsString(restResponse);
 	}
-	
+
 	@Override
 	public String answerQuiz(QuestionEntity question) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -686,7 +697,7 @@ public class QuizServiceImpl implements QuizService{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		PrintWriter printWriter = new PrintWriter(bos);
 		List<ResultQuizEntity> resultQuiz = resultQuizRepo.findByQuiz(id);
-		
+
 		boolean printHeader = true;
 		try (CSVPrinter printer = new CSVPrinter(printWriter, CSVFormat.RFC4180)) {
 			if(printHeader) {
@@ -705,16 +716,16 @@ public class QuizServiceImpl implements QuizService{
 				}
 			});
 		}
-		
+
 		return bos;
 	}
-	
+
 	public List<String> buildHeader(){
 		List<String> header = new ArrayList<>();
 		header.add("Name");
 		header.add("Divisi");
 		header.add("Score");
-		
+
 		return header;
 	}
 
