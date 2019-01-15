@@ -41,6 +41,9 @@ public class ResultQuizEntity implements Serializable {
 	@Transient
 	private String nameuser;
 	
+	@Transient
+	private String quizName;
+	
 	private String questionAnswerJson;
 	
 	public String getId() {
@@ -48,6 +51,12 @@ public class ResultQuizEntity implements Serializable {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	public String getQuizName() {
+		return quizName;
+	}
+	public void setQuizName(String quizName) {
+		this.quizName = quizName;
 	}
 	public List<QuestionEntity> getQuestions() {
 		return questions;

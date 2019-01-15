@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		paging.getContent().stream().map(user -> {
 			user.setUserRoleId(user.getUserRole().getUserRoleCode());
 			user.setUserRoleName(user.getUserRole().getRoleName());
-			user.setPosition(user.getJabatan().concat(SPACE).concat(user.getDivisi()).concat(SPACE).concat(user.getUnit()));
+			user.setPosition(user.getJabatan().concat(SPACE).concat(user.getDivisi()));
 			if(user.getValid() == 1 && !DateTimeFunction.getExpiredDate(user.getExpiredDate())){
 				user.setStatus(StatusConstants.ACTIVE);
 			}else{

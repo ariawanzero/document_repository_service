@@ -24,5 +24,6 @@ public interface QuizService {
 	String answerQuiz(QuestionEntity question) throws Exception;
 	String publishQuiz(QuizEntity request) throws Exception;
 	String detailResultQuiz(ResultQuizSearchRequest request) throws Exception;
+	String resultQuiz(QuizSearchRequest request) throws Exception;
 	ByteArrayOutputStream downloadResulQuiz(String request) throws Exception;
 }

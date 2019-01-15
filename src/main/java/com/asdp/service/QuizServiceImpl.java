@@ -67,7 +67,9 @@ import com.asdp.util.SystemConstant.ValidFlag;
 import com.asdp.util.SystemRestConstant.OpenFileConstant;
 import com.asdp.util.SystemRestConstant.QuizConstant;
 import com.asdp.util.UserException;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import liquibase.util.file.FilenameUtils;
@@ -239,7 +241,7 @@ public class QuizServiceImpl implements QuizService{
 			paging.getContent().stream().map(quiz -> {
 				ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
 				quiz.setScore(resultQuiz.getScore());
-				return user;
+				return quiz;
 			}).collect(Collectors.toList());
 		}
 
@@ -450,6 +452,53 @@ public class QuizServiceImpl implements QuizService{
 		return writter.writeValueAsString(response);
 	}
 
+	@Override
+	public String resultQuiz(QuizSearchRequest request) throws Exception{
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+				new Sort(Sort.Direction.ASC, ResultQuizEntity.Constant.ID_FIELD));
+
+		Specification<ResultQuizEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+			list.add(criteriaBuilder.equal(root.<String>get(ResultQuizEntity.Constant.USERNAME_FIELD),
+					users.getUsername()));
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+
+		Page<ResultQuizEntity> paging = resultQuizRepo.findAll(spec, pageable);
+
+			paging.getContent().stream().map(resultQuiz -> {
+				Optional<QuizEntity> quiz = quizRepo.findById(resultQuiz.getQuiz());
+				QuizEntity quizEn = quiz.get();
+				resultQuiz.setQuizName(quizEn.getName());
+				try {
+					resultQuiz.setQuestions(this.getListQuestions(resultQuiz.getQuestionAnswer()));
+				} catch (JsonParseException e) {
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return resultQuiz;
+			}).collect(Collectors.toList());
+
+		CommonResponsePaging<ResultQuizEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER),
+				new JsonFilter(ResultQuizEntity.Constant.JSON_FILTER, ResultQuizEntity.Constant.QUESTION_ANSWER_JSON_FIELD, 
+						ResultQuizEntity.Constant.QUESTION_ANSWER_FIELD),
+				new JsonFilter(QuestionEntity.Constant.JSON_FILTER, QuestionEntity.Constant.QUIZ_FIELD, 
+						QuestionEntity.Constant.ANSWER_FIELD, QuestionEntity.Constant.FINISH_FIELD));
+
+		return writer.writeValueAsString(restResponse);
+	}
+	
 	@Override
 	public String answerQuiz(QuestionEntity question) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

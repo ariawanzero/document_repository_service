@@ -38,4 +38,9 @@ public class QuizController {
 	public String finishQuizWithQuestions(@RequestBody QuestionEntity request) throws Exception {
 		return quizService.answerQuiz(request);
 	}
+	
+	@PostMapping(SystemRestConstant.QuizConstant.RESULT_QUIZ_ADDR)
+	public String resultQuiz(@RequestBody QuizSearchRequest request) throws Exception {
+		return quizService.resultQuiz(request);
+	}
 }

@@ -36,6 +36,7 @@ public class SystemRestConstant {
 		public static final String ANSWER_QUIZ_ADDR = "/answerQuiz";
 		public static final String FINISH_QUIZ_ADDR = "/finishQuiz";
 		public static final String PUBLISH_QUIZ_ADDR = "/publishQuiz";
+		public static final String RESULT_QUIZ_ADDR = "/resultQuiz";
 
 		public static final String RESULT_QUIZ_CONTROLLER = "/result";
 		public static final String SEARCH_RESULT_QUIZ_CONTROLLER = "/searchResultQuiz";
