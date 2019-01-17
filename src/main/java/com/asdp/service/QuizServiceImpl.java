@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -333,6 +334,11 @@ public class QuizServiceImpl implements QuizService{
 
 			request.setStartDate(DateTimeFunction.getDateMinus7Hour(request.getStartDate()));
 			request.setEndDate(DateTimeFunction.getDateMinus7Hour(request.getEndDate()));
+			
+			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
+				throw new UserException("400", "Start Date cannot Greater than End Date !");
+			}
+			
 			BeanUtils.copyProperties(request, toUpdate);
 
 
@@ -342,6 +348,10 @@ public class QuizServiceImpl implements QuizService{
 			toUpdate.setStartDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getStartDate()));
 			toUpdate.setEndDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getEndDate()));
 
+			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
+				throw new UserException("400", "Start Date cannot Greater than End Date !");
+			}
+			
 			toUpdate.setCreatedBy(users.getUsername());
 			toUpdate.setCreatedDate(new Date());
 		}
@@ -605,13 +615,20 @@ public class QuizServiceImpl implements QuizService{
 	@Async
 	public void sendNotificationQuiz(QuizEntity quiz) throws Exception{
 		CriteriaBuilder critBuilder = em.getCriteriaBuilder();
-
+		quiz.setDivisi(quiz.getDivisi().replace("[", "").replace("]", "").replace("\"", ""));
+		String[] split = quiz.getDivisi().split(",");
+		List<String> list = Arrays.asList(split);
+		
 		CriteriaQuery<UserEntity> query = critBuilder.createQuery(UserEntity.class);
 		Root<UserEntity> root = query.from(UserEntity.class);
 		List<Predicate> lstWhere = new ArrayList<Predicate>();
-		lstWhere.add(critBuilder.like(root.get(UserEntity.Constant.DIVISI_FIELD), 
-				SystemConstant.WILDCARD + quiz.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+		javax.persistence.criteria.Expression<String> parentExpression = root.get(QuizEntity.Constant.DIVISI_FIELD);
+		javax.persistence.criteria.Predicate parentPredicate = parentExpression.in(list);
+		lstWhere.add(parentPredicate);
+		lstWhere.add(critBuilder.equal(root.get(QuizEntity.Constant.VALID_FIELD), 
+				ValidFlag.VALID));
 		query.select(root).where(lstWhere.toArray(new Predicate[] {}));
+		
 		List<UserEntity> users = em.createQuery(query).getResultList();
 		users.stream().filter(user -> user.getUserRole().getUserRoleCode() != "0" && user.getUserRole().getUserRoleCode() != "1");
 

@@ -379,4 +379,13 @@
 			<where>id=19</where>
 		</delete>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-9" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="DOCUMENTNOTIF" />
+			<column name="subject" value="New Document Published" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>The document has been published, please check infoasdp to see the document before expired date.<br/>Document Name: %s<br/>Document Date: %s<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
 </databaseChangeLog>

@@ -24,7 +24,7 @@ public class ResultQuizController {
 	private QuizService quizService;
 	
 	@PostMapping(SystemRestConstant.QuizConstant.SEARCH_RESULT_QUIZ_CONTROLLER)
-	public String searchHistoryLogin(@RequestBody ResultQuizSearchRequest request) throws Exception {				
+	public String searchResultQuiz(@RequestBody ResultQuizSearchRequest request) throws Exception {				
 		return quizService.searchResultQuiz(request);
 	}
 	

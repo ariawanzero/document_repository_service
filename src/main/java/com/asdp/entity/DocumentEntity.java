@@ -176,6 +176,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		public static final String NAME_FIELD = "name";
 		public static final String DESCRIPTION_FIELD = "description";
 		public static final String DIVISI_FIELD = "divisi";
+		public static final String STATUS_FIELD = "status";
 		public static final String START_DATE_FIELD = "startDate";
 		public static final String END_DATE_FIELD = "endDate";
 		public static final String TYPE_FIELD = "type";

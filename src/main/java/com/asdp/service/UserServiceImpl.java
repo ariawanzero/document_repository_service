@@ -238,10 +238,17 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 			request.setPassword(toUpdate.getPassword());
 			request.setExpiredDate(DateTimeFunction.getDatePlus7Hour(request.getExpiredDate()));
 			BeanUtils.copyProperties(request, toUpdate);
+			
+			toUpdate.setModifiedBy("superuser");
+			toUpdate.setModifiedDate(new Date());
 		}else{
 			String password = StringFunction.randomAlphaNumeric(7);
 			toUpdate.setPassword(PasswordUtils.encryptPassword(password));
 			toUpdate.setExpiredDate(DateTimeFunction.getDatePlus7Hour(toUpdate.getExpiredDate()));
+			toUpdate.setCreatedBy("superuser");
+			toUpdate.setCreatedDate(new Date());
+			toUpdate.setModifiedBy("superuser");
+			toUpdate.setModifiedDate(new Date());
 			Optional<EmailEntity> email = emailRepo.findById("NEWMEMBER");
 			EmailUtils.sendEmail(toUpdate.getUsername(), String.format(email.get().getBodyMessage(), toUpdate.getName(), toUpdate.getUsername(), password), email.get().getSubject());
 		}

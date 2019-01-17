@@ -4,6 +4,7 @@ public class DocumentRequest {
 	private String name;
 	private String type;
 	private String divisi;
+	private String status;
 	private int page;
 	public String getName() {
 		return name;
@@ -29,5 +30,10 @@ public class DocumentRequest {
 	public void setPage(int page) {
 		this.page = page;
 	}
-	
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}	
 }

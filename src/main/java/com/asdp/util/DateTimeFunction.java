@@ -710,6 +710,11 @@ public class DateTimeFunction {
 		return result;
 	}
 	
+	public static boolean getStartGreaterThanEnd(Date start, Date end) {
+		boolean result = start.getTime() >= end.getTime() ? true : false;
+		return result;
+	}
+	
 	public static Date getDatePlus7Hour(Date change) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(change);

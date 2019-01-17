@@ -252,7 +252,7 @@ public class SystemConstant {
 		public static final String EXT_PDF = ".pdf";
 
 		public static final String PATH = "document";
-		public static final String URL_PREVIEW = "http://178.128.216.198:8081";
+		public static final String URL_PREVIEW = "http://localhost:8081";
 		public static final String VALID_SUFFIX 	= "-valid";
 		public static final String INVALID_SUFFIX	= "-invalid";
 		public static final String PROCESSED_SUFFIX 	= "-processed";
@@ -321,6 +321,7 @@ public class SystemConstant {
 	public static final class StatusConstants{
 		public static final String EXPIRED = "EXPIRED";
 		public static final String ACTIVE = "ACTIVE";
+		public static final String PENDING = "PENDING";
 	}
 
 }
