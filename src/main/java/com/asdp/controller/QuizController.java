@@ -20,7 +20,7 @@ public class QuizController {
 	private QuizService quizService;
 	
 	@PostMapping(SystemRestConstant.QuizConstant.SEARCH_QUIZ_ADDR)
-	public String searchHistoryLogin() throws Exception {				
+	public String searchQuiz() throws Exception {				
 		return quizService.searchMateriQuiz(new QuizSearchRequest());
 	}
 

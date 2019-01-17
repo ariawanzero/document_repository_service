@@ -361,4 +361,22 @@
         	<where>id = 17</where>
     	</delete>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-8" failOnError="true">
+		<update tableName="sys_menu">
+			<column name="url" value="result"/>
+			<where>menu_code='RESULTQUIZ' </where>
+		</update>
+		<delete tableName="sys_menu_role">
+			<where>id=24</where>
+		</delete>
+		<delete tableName="sys_menu_role">
+			<where>id=25</where>
+		</delete>
+		<delete tableName="sys_menu_role">
+			<where>id=18</where>
+		</delete>
+		<delete tableName="sys_menu_role">
+			<where>id=19</where>
+		</delete>
+	</changeSet>
 </databaseChangeLog>

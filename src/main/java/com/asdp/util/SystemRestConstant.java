@@ -43,6 +43,18 @@ public class SystemRestConstant {
 		public static final String DETAIL_RESULT_QUIZ_CONTROLLER = "/detailResultQuiz";
 		public static final String DOWNLOAD_RESULT_QUIZ_CONTROLLER = "/downloadResultQuiz";
 	}
+	public static final class DocumentConstant {
+		private DocumentConstant() {
+		}
+		
+		public static final String DOCUMENT_CONTROLLER = "/document";
+		public static final String SAVE_DOCUMENT_ADDR = "/saveDocument";
+		public static final String FIND_DOCUMENT_DETAIL_ADDR = "/findDocumentDetail";
+		public static final String SEARCH_DOCUMENT_ADDR = "/searchDocument";
+		public static final String SEARCH_DOCUMENT_PENDING_ADDR = "/searchDocumentPending";
+		public static final String APPROVE_DOCUMENT_ADDR = "/approveDocument";
+		public static final String FIND_HISTORY_DOCUMENT_DETAIL_ADDR = "/findHistoryDocumentDetail";
+	}
 	
 	public static final class OpenFileConstant {
 		private OpenFileConstant() {
