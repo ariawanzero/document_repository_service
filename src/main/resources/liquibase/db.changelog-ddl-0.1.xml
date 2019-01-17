@@ -125,24 +125,7 @@
 			<column name="expiresAt" type="DATETIME" />
 			<column name="lastModifiedAt" type="DATETIME" />			
 		</createTable>
-	</changeSet>
-	<changeSet author="Septa" id="0.0-2" failOnError="true">
-		<createTable tableName="materi_quiz">
-			<column name="id" type="VARCHAR(100)">
-				<constraints primaryKey="true" nullable="false" />
-			</column>
-			<column name="name" type="VARCHAR(100)" />
-			<column name="valid" type="INT" defaultValue="1">
-				<constraints nullable="false" />
-			</column>
-			<column name="name_file_json" type="MEDIUMTEXT" />
-			<column name="created_by" type="VARCHAR(200)" />
-			<column name="created_date" type="datetime" />
-			<column name="modified_by" type="VARCHAR(200)" />
-			<column name="modified_date" type="datetime" />
-		</createTable>
-	</changeSet>
-	
+	</changeSet>	
 	<changeSet author="Septa" id="0.0-3" failOnError="true">
 		<createTable tableName="sys_email">
 			<column name="email_code" type="VARCHAR(100)">
@@ -150,6 +133,111 @@
 			</column>
 			<column name="subject" type="VARCHAR(100)" />
 			<column name="body_message" type="MEDIUMTEXT" />
+		</createTable>
+	</changeSet>
+	
+	<changeSet author="Septa" id="0.0-4" failOnError="true">
+		<createTable tableName="quiz">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="name" type="VARCHAR(100)" />
+			<column name="description" type="MEDIUMTEXT" />
+			<column name="divisi" type="VARCHAR(200)" />
+			<column name="start_date" type="datetime" />
+			<column name="end_date" type="datetime" />
+			<column name="name_file_json" type="MEDIUMTEXT" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="total_quiz" type="INT"/>
+			<column name="publish" type="BIT(1)" defaultValue="0">
+				<constraints nullable="false" />
+			</column>
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="question">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="question" type="MEDIUMTEXT" />
+			<column name="quiz" type="VARCHAR(100)" />
+			<column name="choicea" type="MEDIUMTEXT" />
+			<column name="choiceb" type="MEDIUMTEXT" />
+			<column name="choicec" type="MEDIUMTEXT" />
+			<column name="choiced" type="MEDIUMTEXT" />
+			<column name="answer" type="VARCHAR(1)" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="result_quiz">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="username" type="VARCHAR(100)" />
+			<column name="quiz" type="VARCHAR(100)" />
+			<column name="question_answer_json" type="MEDIUMTEXT" />
+		</createTable>
+	</changeSet>
+	<changeSet author="SEPTA" id="0.0-2" failOnError="true">
+		<addColumn tableName="result_quiz">
+			<column name="score" type="INTEGER" />
+		</addColumn>
+		<modifyDataType columnName="description"  newDataType="LONGTEXT" tableName="quiz"/>
+		<modifyDataType columnName="question"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choicea"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choiceb"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choicec"  newDataType="LONGTEXT" tableName="question"/>
+		<modifyDataType columnName="choiced"  newDataType="LONGTEXT" tableName="question"/>
+	</changeSet>
+	<changeSet author="SEPTA" id="0.0-5" failOnError="true">
+		<createTable tableName="document">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="name" type="VARCHAR(100)" />
+			<column name="description" type="LONGTEXT" />
+			<column name="divisi" type="VARCHAR(200)" />
+			<column name="start_date" type="datetime" />
+			<column name="end_date" type="datetime" />
+			<column name="category" type="VARCHAR(100)" />
+			<column name="type" type="VARCHAR(100)" />
+			<column name="sop" type="VARCHAR(100)" />
+			<column name="tumbnail" type="LONGTEXT" />
+			<column name="name_file_json" type="MEDIUMTEXT" />
+			<column name="status" type="VARCHAR(100)" />
+			<column name="valid" type="INT" defaultValue="1">
+				<constraints nullable="false" />
+			</column>
+			<column name="twitter" type="BIT(1)" defaultValue="0">
+				<constraints nullable="false" />
+			</column>
+			<column name="facebook" type="BIT(1)" defaultValue="0">
+				<constraints nullable="false" />
+			</column>
+			<column name="instagram" type="BIT(1)" defaultValue="0">
+				<constraints nullable="false" />
+			</column>
+			<column name="created_by" type="VARCHAR(200)" />
+			<column name="created_date" type="datetime" />
+			<column name="modified_by" type="VARCHAR(200)" />
+			<column name="modified_date" type="datetime" />
+		</createTable>
+		<createTable tableName="history_document">
+			<column name="id" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="username" type="VARCHAR(100)" />
+			<column name="document" type="VARCHAR(100)" />
+			<column name="readDocument" type="datetime" />
 		</createTable>
 	</changeSet>
 </databaseChangeLog>

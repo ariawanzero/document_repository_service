@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		paging.getContent().stream().map(user -> {
 			user.setUserRoleId(user.getUserRole().getUserRoleCode());
 			user.setUserRoleName(user.getUserRole().getRoleName());
-			user.setPosition(user.getJabatan().concat(SPACE).concat(user.getDivisi()).concat(SPACE).concat(user.getUnit()));
+			user.setPosition(user.getJabatan().concat(SPACE).concat(user.getDivisi()));
 			if(user.getValid() == 1 && !DateTimeFunction.getExpiredDate(user.getExpiredDate())){
 				user.setStatus(StatusConstants.ACTIVE);
 			}else{
@@ -203,6 +203,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		user.setUserRoleName(user.getUserRole().getRoleName());
 		user.setUserRoleId(user.getUserRole().getUserRoleCode());
+		user.setExpiredDate(DateTimeFunction.getDateMinus7Hour(user.getExpiredDate()));
 
 		CommonResponse<UserEntity> response = new CommonResponse<>(user);
 		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
@@ -235,10 +236,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				toUpdate = existUser.get();
 			}
 			request.setPassword(toUpdate.getPassword());
+			request.setExpiredDate(DateTimeFunction.getDatePlus7Hour(request.getExpiredDate()));
 			BeanUtils.copyProperties(request, toUpdate);
 		}else{
 			String password = StringFunction.randomAlphaNumeric(7);
 			toUpdate.setPassword(PasswordUtils.encryptPassword(password));
+			toUpdate.setExpiredDate(DateTimeFunction.getDatePlus7Hour(toUpdate.getExpiredDate()));
 			Optional<EmailEntity> email = emailRepo.findById("NEWMEMBER");
 			EmailUtils.sendEmail(toUpdate.getUsername(), String.format(email.get().getBodyMessage(), toUpdate.getName(), toUpdate.getUsername(), password), email.get().getSubject());
 		}
@@ -273,7 +276,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		Specification<HistoryLoginEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
 			if (request.getStartDate() != null && request.getEndDate() != null) {
-				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), request.getEndDate()));
+				Date dayAfter = new Date(request.getEndDate().getTime()+(24*60*60*1000));
+				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), dayAfter));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};

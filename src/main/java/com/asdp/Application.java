@@ -14,10 +14,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
-import com.asdp.service.MateriQuizService;
-import com.asdp.service.MateriQuizServiceImpl;
 import com.asdp.service.MenuService;
 import com.asdp.service.MenuServiceImpl;
+import com.asdp.service.QuizService;
+import com.asdp.service.QuizServiceImpl;
 import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
 import com.asdp.service.StorageService;
@@ -50,8 +50,8 @@ public class Application implements CommandLineRunner {
 	}
 	
 	@Bean
-	public MateriQuizService materiQuizService() {
-		return new MateriQuizServiceImpl();
+	public QuizService quizService() {
+		return new QuizServiceImpl();
 	}
 	
 	@Bean

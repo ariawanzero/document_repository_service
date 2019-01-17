@@ -198,6 +198,7 @@ public class SystemConstant {
 		public static final int VALID = 1;
 		public static final String INVALID_STR = "Invalid";
 		public static final String VALID_STR = "Valid";
+		public static final boolean TRUE_BOOL = true;
 		public static final Map<Integer, String> validFlagMap = new HashMap<>();
 
 		static {

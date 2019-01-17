@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.asdp.service.MateriQuizService;
+import com.asdp.service.QuizService;
 import com.asdp.util.SystemRestConstant;
 import com.google.common.io.ByteStreams;
 
@@ -20,9 +20,9 @@ import com.google.common.io.ByteStreams;
 public class OpenFileController {
 	
 	@Autowired
-	private MateriQuizService materiQuizService;
+	private QuizService materiQuizService;
 	
-	@GetMapping(SystemRestConstant.MateriQuizConstant.PREVIEW_FILE_ADDR)
+	@GetMapping(SystemRestConstant.QuizConstant.PREVIEW_FILE_ADDR)
 	public ResponseEntity<byte[]> downloadMateriQuiz(@RequestParam(name = "name", defaultValue = "", required = true) String name) throws Exception {		
 		Resource file = materiQuizService.download(name);
 		
