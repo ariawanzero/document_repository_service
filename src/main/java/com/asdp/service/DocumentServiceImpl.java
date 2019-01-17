@@ -2,6 +2,7 @@ package com.asdp.service;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -412,13 +413,20 @@ public class DocumentServiceImpl implements DocumentService {
 	@Async
 	public void sendNotificationQuiz(DocumentEntity document) throws Exception{
 		CriteriaBuilder critBuilder = em.getCriteriaBuilder();
-
+		document.setDivisi(document.getDivisi().replace("[", "").replace("]", "").replace("\"", ""));
+		String[] split = document.getDivisi().split(",");
+		List<String> list = Arrays.asList(split);
+		
 		CriteriaQuery<UserEntity> query = critBuilder.createQuery(UserEntity.class);
 		Root<UserEntity> root = query.from(UserEntity.class);
 		List<Predicate> lstWhere = new ArrayList<Predicate>();
-		lstWhere.add(critBuilder.like(root.get(UserEntity.Constant.DIVISI_FIELD), 
-				SystemConstant.WILDCARD + document.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+		javax.persistence.criteria.Expression<String> parentExpression = root.get(QuizEntity.Constant.DIVISI_FIELD);
+		javax.persistence.criteria.Predicate parentPredicate = parentExpression.in(list);
+		lstWhere.add(parentPredicate);
+		lstWhere.add(critBuilder.equal(root.get(QuizEntity.Constant.VALID_FIELD), 
+				ValidFlag.VALID));
 		query.select(root).where(lstWhere.toArray(new Predicate[] {}));
+		
 		List<UserEntity> users = em.createQuery(query).getResultList();
 		users.stream().filter(user -> user.getUserRole().getUserRoleCode() != "0" && user.getUserRole().getUserRoleCode() != "1");
 
