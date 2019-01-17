@@ -240,4 +240,12 @@
 			<column name="readDocument" type="datetime" />
 		</createTable>
 	</changeSet>
+	<changeSet author="SEPTA" id="0.0-6" failOnError="true">
+		<addColumn tableName="document">
+			<column name="description_no_tag" type="LONGTEXT" />
+		</addColumn>
+	</changeSet>
+	<changeSet author="SEPTA" id="0.0-7" failOnError="true">
+		<renameColumn tableName="history_document" oldColumnName="readDocument" newColumnName="read_document" columnDataType="datetime" />
+	</changeSet>
 </databaseChangeLog>

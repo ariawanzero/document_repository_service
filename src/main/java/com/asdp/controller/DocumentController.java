@@ -54,5 +54,10 @@ public class DocumentController {
 	public String findHistoryDocumentDetail(@RequestBody DocumentRequest request) throws Exception {
 		return "";
 	}
+	
+	@PostMapping(SystemRestConstant.DocumentConstant.READ_DOCUMENT_DETAIL_ADDR)
+	public String readDocumentDetail(@RequestBody DocumentEntity request) throws Exception {
+		return documentService.readDocumentDetail(request.getId());
+	}
 
 }

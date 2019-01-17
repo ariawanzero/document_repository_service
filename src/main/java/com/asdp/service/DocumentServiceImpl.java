@@ -15,6 +15,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -65,7 +67,7 @@ import liquibase.util.file.FilenameUtils;
 public class DocumentServiceImpl implements DocumentService {
 
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	
+
 	@Autowired
 	private CommonResponseGenerator comGen;
 
@@ -89,7 +91,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 	@PersistenceContext
 	EntityManager em;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public String saveDocumentFile(MultipartFile file, String id) throws Exception {
@@ -134,6 +136,8 @@ public class DocumentServiceImpl implements DocumentService {
 		Object principal = authentication.getPrincipal();
 		UserEntity users = new UserEntity();
 		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
+		boolean sendEmail = false;
 
 		DocumentEntity toUpdate = request;
 		if (request == null || StringFunction.isEmpty(request.getName())) {
@@ -156,43 +160,51 @@ public class DocumentServiceImpl implements DocumentService {
 				request.setNameFileJson(this.changeNameFile(toUpdate.getNameFile(), request.getName()));
 			}
 
-			if(users.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
+			request.setStartDate(DateTimeFunction.getDateMinus7Hour(request.getStartDate()));
+			request.setEndDate(DateTimeFunction.getDateMinus7Hour(request.getEndDate()));
+
+			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
+				throw new UserException("400", "Start Date cannot Greater than End Date !");
+			}
+
+			BeanUtils.copyProperties(request, toUpdate);
+
+			if(user.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
 				toUpdate.setStatus(StatusConstants.PENDING);
 			}else {
 				toUpdate.setStatus(StatusConstants.ACTIVE);
 			}
-			
-			request.setStartDate(DateTimeFunction.getDateMinus7Hour(request.getStartDate()));
-			request.setEndDate(DateTimeFunction.getDateMinus7Hour(request.getEndDate()));
-			
-			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
-				throw new UserException("400", "Start Date cannot Greater than End Date !");
-			}
-			
-			BeanUtils.copyProperties(request, toUpdate);
-
-
 			toUpdate.setModifiedBy(users.getUsername());
 			toUpdate.setModifiedDate(new Date());
 		}else {
 			toUpdate.setStartDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getStartDate()));
 			toUpdate.setEndDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getEndDate()));
-			
+
 			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
 				throw new UserException("400", "Start Date cannot Greater than End Date !");
 			}
-			
-			if(users.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
+
+			if(user.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
 				toUpdate.setStatus(StatusConstants.PENDING);
 			}else {
 				toUpdate.setStatus(StatusConstants.ACTIVE);
-				sendNotificationQuiz(toUpdate);
+				sendEmail = true;
 			}
 			toUpdate.setCreatedBy(users.getUsername());
 			toUpdate.setCreatedDate(new Date());
 		}
 
+		if(toUpdate.getDescription() != null) {
+			Document doc = Jsoup.parse(toUpdate.getDescription()); 
+			String text = doc.text();
+			toUpdate.setDescriptionNoTag(text);
+		}
+
 		documentRepo.save(toUpdate);
+
+		if(sendEmail) {
+			sendNotificationQuiz(toUpdate);
+		}
 
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
@@ -218,7 +230,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return writter.writeValueAsString(response);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public String readDocumentDetail(String id) throws Exception {
@@ -227,7 +239,7 @@ public class DocumentServiceImpl implements DocumentService {
 		UserEntity users = new UserEntity();
 		BeanUtils.copyProperties(principal, users);
 		UserEntity user = userRepo.findByUsername(users.getUsername());
-		
+
 		DocumentEntity document = documentRepo.findById(id).orElseThrow(() -> new UserException("400", "Document not found"));
 		document.setStartDate(DateTimeFunction.getDatePlus7Hour(document.getStartDate()));
 		document.setEndDate(DateTimeFunction.getDatePlus7Hour(document.getEndDate()));
@@ -238,9 +250,11 @@ public class DocumentServiceImpl implements DocumentService {
 			hisDocument.setUsername(user.getUsername());
 			hisDocument.setDocument(id);
 			hisDocument.setReadDocument(new Date());
+			historyDocumentRepo.save(hisDocument);
+			historyDocumentRepo.flush();
 		}
 		document.setCountRead(historyDocumentRepo.countByDocument(id));
-		
+
 		if(document.getNameFileJson() != null) {
 			document.setNameFile(JsonUtil.parseJson(document.getNameFileJson(), ArrayList.class));
 		}
@@ -278,13 +292,13 @@ public class DocumentServiceImpl implements DocumentService {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + request.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
-			
+
 			if (!StringFunction.isEmpty(request.getType())) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.TYPE_FIELD)),
 						SystemConstant.WILDCARD + request.getType().toLowerCase() + SystemConstant.WILDCARD));
 			}
 
-			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
 				if (!StringFunction.isEmpty(request.getStatus())) {
 					list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
 							SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
@@ -294,6 +308,8 @@ public class DocumentServiceImpl implements DocumentService {
 						ValidFlag.VALID));
 				list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
 				list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
 
 			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
@@ -304,18 +320,28 @@ public class DocumentServiceImpl implements DocumentService {
 		Page<DocumentEntity> paging = documentRepo.findAll(spec, pageable);
 
 		List<DocumentEntity> listExpired = new ArrayList<>();
-		
+
 		paging.getContent().stream().map(doc -> {
 			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			if(doc.getDescriptionNoTag() != null) {
+				String docShow = doc.getDescriptionNoTag().substring(0, 50);
+				docShow = docShow + "...";
+				doc.setDescriptionNoTag(docShow);
+			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
 				doc.setStatus(StatusConstants.EXPIRED);
 				listExpired.add(doc);
 			}
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				doc.setView(false);
+			}else {
+				doc.setView(true);
+			}
 			return doc;
 		}).collect(Collectors.toList());
-		
+
 		if(listExpired.size() > 0) updateStatusInvalid(listExpired);
 
 		CommonResponsePaging<DocumentEntity> restResponse = comGen
@@ -338,7 +364,7 @@ public class DocumentServiceImpl implements DocumentService {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public String approveDocument(String id) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -346,20 +372,20 @@ public class DocumentServiceImpl implements DocumentService {
 		UserEntity users = new UserEntity();
 		BeanUtils.copyProperties(principal, users);
 		UserEntity user = userRepo.findByUsername(users.getUsername());
-		
+
 		DocumentEntity document = documentRepo.findById(id).orElseThrow(() -> new UserException("400", "Document not found"));
 		document.setModifiedBy(user.getUsername());
 		document.setModifiedDate(new Date());
 		document.setStatus(StatusConstants.ACTIVE);
-		
+
 		documentRepo.save(document);
-		
+
 		sendNotificationQuiz(document);
-		
+
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
-	
+
 	private boolean isExistDocumentByDocumentName(String name, String id) {
 		Specification<DocumentEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
@@ -376,7 +402,7 @@ public class DocumentServiceImpl implements DocumentService {
 		Long rowCount = documentRepo.count(spec);
 		return (rowCount != null && rowCount > 0 ? true : false);
 	}
-	
+
 	public String changeNameFile(List<String> filename, String nameQuiz) throws JsonProcessingException {
 		int i = 0;
 		List<String> newName = new ArrayList<>();
@@ -400,23 +426,23 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return JsonUtil.generateJson(newName);
 	}
-	
+
 	public Resource download(String nameFile) throws Exception {
 		return storageService.loadFile(nameFile);
 	}
-	
+
 	@Async
 	private void updateStatusInvalid(List<DocumentEntity> listDoc){
 		documentRepo.saveAll(listDoc);
 	}
-	
+
 	@Async
 	public void sendNotificationQuiz(DocumentEntity document) throws Exception{
 		CriteriaBuilder critBuilder = em.getCriteriaBuilder();
 		document.setDivisi(document.getDivisi().replace("[", "").replace("]", "").replace("\"", ""));
 		String[] split = document.getDivisi().split(",");
 		List<String> list = Arrays.asList(split);
-		
+
 		CriteriaQuery<UserEntity> query = critBuilder.createQuery(UserEntity.class);
 		Root<UserEntity> root = query.from(UserEntity.class);
 		List<Predicate> lstWhere = new ArrayList<Predicate>();
@@ -426,7 +452,7 @@ public class DocumentServiceImpl implements DocumentService {
 		lstWhere.add(critBuilder.equal(root.get(QuizEntity.Constant.VALID_FIELD), 
 				ValidFlag.VALID));
 		query.select(root).where(lstWhere.toArray(new Predicate[] {}));
-		
+
 		List<UserEntity> users = em.createQuery(query).getResultList();
 		users.stream().filter(user -> user.getUserRole().getUserRoleCode() != "0" && user.getUserRole().getUserRoleCode() != "1");
 

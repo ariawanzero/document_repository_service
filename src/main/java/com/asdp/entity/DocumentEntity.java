@@ -30,6 +30,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private String id;
 	private String name;
 	private String description;
+	private String descriptionNoTag;
 	private String type;
 	private String sop;
 	private String category;
@@ -50,12 +51,27 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private String urlPreview;
 	@Transient
 	private int countRead;
+	@Transient
+	private boolean view = false;
 	
 	public String getId() {
 		return id;
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public boolean isView() {
+		return view;
+	}
+	public void setView(boolean view) {
+		this.view = view;
+	}
+	public String getDescriptionNoTag() {
+		return descriptionNoTag;
+	}
+	public void setDescriptionNoTag(String descriptionNoTag) {
+		this.descriptionNoTag = descriptionNoTag;
 	}
 	public String getSop() {
 		return sop;
@@ -175,6 +191,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		public static final String ID_FIELD = "id";
 		public static final String NAME_FIELD = "name";
 		public static final String DESCRIPTION_FIELD = "description";
+		public static final String DESCRIPTION_NO_TAG_FIELD = "descriptionNoTag";
 		public static final String DIVISI_FIELD = "divisi";
 		public static final String STATUS_FIELD = "status";
 		public static final String START_DATE_FIELD = "startDate";
