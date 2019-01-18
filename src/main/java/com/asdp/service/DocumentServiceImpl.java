@@ -3,6 +3,7 @@ package com.asdp.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -310,6 +312,7 @@ public class DocumentServiceImpl implements DocumentService {
 				list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.notEqual(root.get(DocumentEntity.Constant.STATUS_FIELD), StatusConstants.PENDING));
 			}
 
 			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
@@ -354,9 +357,90 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	@Override
-	public String searchDocumentPending(String id) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public String searchDocumentPending(DocumentRequest request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
+		request.setStatus(StatusConstants.PENDING);
+
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+				new Sort(Sort.Direction.ASC, DocumentEntity.Constant.NAME_FIELD));
+
+		Specification<DocumentEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+
+			if (!StringFunction.isEmpty(request.getName())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.NAME_FIELD)),
+						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (!StringFunction.isEmpty(request.getDivisi())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + request.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (!StringFunction.isEmpty(request.getType())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.TYPE_FIELD)),
+						SystemConstant.WILDCARD + request.getType().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				if (!StringFunction.isEmpty(request.getStatus())) {
+					list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+							SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
+				}
+			}else {
+				list.add(criteriaBuilder.equal(root.<String>get(DocumentEntity.Constant.VALID_FIELD),
+						ValidFlag.VALID));
+				list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
+				list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
+
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+
+		Page<DocumentEntity> paging = documentRepo.findAll(spec, pageable);
+
+		List<DocumentEntity> listExpired = new ArrayList<>();
+
+		paging.getContent().stream().map(doc -> {
+			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
+					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			if(doc.getDescriptionNoTag() != null) {
+				String docShow = doc.getDescriptionNoTag().substring(0, 50);
+				docShow = docShow + "...";
+				doc.setDescriptionNoTag(docShow);
+			}
+			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
+				doc.setValid(SystemConstant.ValidFlag.INVALID);
+				doc.setStatus(StatusConstants.EXPIRED);
+				listExpired.add(doc);
+			}
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				doc.setView(false);
+			}else {
+				doc.setView(true);
+			}
+			return doc;
+		}).collect(Collectors.toList());
+
+		if(listExpired.size() > 0) updateStatusInvalid(listExpired);
+
+		CommonResponsePaging<DocumentEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER));
+
+		return writer.writeValueAsString(restResponse);
 	}
 
 	@Override
@@ -463,6 +547,117 @@ public class DocumentServiceImpl implements DocumentService {
 			EmailUtils.sendEmail(user.getUsername(), String.format(email.get().getBodyMessage(), user.getName(), document.getName(), date), email.get().getSubject());
 		}
 
+	}
+	
+	@Override
+	public String searchDocumentAdvanced(DocumentRequest request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
+
+		Pageable pageable;
+		
+		if(request.getName().equals("news")) {
+			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
+		}else if(request.getName().equals("popular")) {
+			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
+		}else {
+			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
+		}
+
+		Specification<DocumentEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+
+			if (!StringFunction.isEmpty(request.getName()) && !request.getName().equals("new") && !request.getName().equals("popular")) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DESCRIPTION_NO_TAG_FIELD)),
+						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
+			}
+			list.add(criteriaBuilder.equal(root.<String>get(DocumentEntity.Constant.VALID_FIELD),
+					ValidFlag.VALID));
+			list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
+			list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
+			
+			if (!user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && !user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						SystemConstant.WILDCARD + StatusConstants.ACTIVE + SystemConstant.WILDCARD));
+			}
+			
+			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
+
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+
+		Page<DocumentEntity> paging = documentRepo.findAll(spec, pageable);
+
+		paging.getContent().stream().map(doc -> {
+			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
+					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			if(!request.getName().equals("popular") && !request.getName().equals("new")) {
+				if(doc.getDescriptionNoTag() != null) {
+					String[] docShow = doc.getDescriptionNoTag().toLowerCase().split(request.getName().toLowerCase());
+					String docs;
+					if(docShow[1].length()>350) {
+						docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
+					}else {
+						docs = "<b>"+request.getName()+"</b>".concat(" ");
+						String concats = "";
+						for(int i=1; i<docShow.length; i++) {
+							
+							if(i == 1) {
+								concats = docShow[i].concat(" ").concat(docs);
+							}
+							if(i > 1) {
+								int a = concats.length();
+								a = 350-a;
+								if(docShow[i].length() < a) {
+									concats = concats.concat(docShow[i].concat(" ").concat(docs));
+								}else if(a > 0){
+									if(docShow[i].length() > a) {
+										concats = concats.concat(docShow[i].substring(1, a-docs.length()));
+									}else {
+										concats = concats.concat(docShow[i].substring(1, a-docs.length())).concat(" ").concat(docs);
+									}
+								}
+							}
+						}
+						docs = docs.concat(concats)+"...";
+					}
+					doc.setDescriptionNoTag(docs);
+				}
+			}else {
+				if(doc.getDescriptionNoTag() != null) {
+					String docShow = doc.getDescriptionNoTag().substring(0, 350);
+					docShow = docShow + "...";
+					doc.setDescriptionNoTag(docShow);
+				}
+			}
+			
+			if(request.getName().equals("popular")) {
+				doc.setCountRead(historyDocumentRepo.countByDocument(doc.getId()));
+			}
+			return doc;
+		}).collect(Collectors.toList());
+		
+		paging = PageableExecutionUtils.getPage(
+						paging.getContent().stream().sorted(Comparator.comparing(DocumentEntity::getCountRead).reversed()).collect(Collectors.toList()),
+						pageable,
+						paging::getTotalElements);
+
+		CommonResponsePaging<DocumentEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER),
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER, DocumentEntity.Constant.DESCRIPTION_FIELD));
+
+		return writer.writeValueAsString(restResponse);
 	}
 
 }

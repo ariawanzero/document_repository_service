@@ -42,7 +42,7 @@ public class DocumentController {
 	
 	@PostMapping(SystemRestConstant.DocumentConstant.SEARCH_DOCUMENT_PENDING_ADDR)
 	public String searchDocumentPending(@RequestBody DocumentRequest request) throws Exception {
-		return "";
+		return documentService.searchDocumentPending(request);
 	}
 	
 	@PostMapping(SystemRestConstant.DocumentConstant.APPROVE_DOCUMENT_ADDR)
@@ -58,6 +58,11 @@ public class DocumentController {
 	@PostMapping(SystemRestConstant.DocumentConstant.READ_DOCUMENT_DETAIL_ADDR)
 	public String readDocumentDetail(@RequestBody DocumentEntity request) throws Exception {
 		return documentService.readDocumentDetail(request.getId());
+	}
+	
+	@PostMapping(SystemRestConstant.DocumentConstant.DASHBOAR_SEARCH_ADDR)
+	public String dashboardSearch(@RequestBody DocumentRequest request) throws Exception {
+		return documentService.searchDocumentAdvanced(request);
 	}
 
 }
