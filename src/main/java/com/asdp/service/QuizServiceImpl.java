@@ -448,11 +448,13 @@ public class QuizServiceImpl implements QuizService{
 			resultQuiz.setQuiz(quiz.getId());
 			resultQuiz.setUsername(users.getUsername());
 			resultQuiz.setQuestions(listQuestionFinal);
+			resultQuiz.setEndDateQuiz(quiz.getEndDate());
 
 			resultQuizRepo.save(resultQuiz);
 		} else {
 			questions = this.getListQuestions(resultQuiz.getQuestionAnswer());
 			resultQuiz.setQuestions(questions);
+			resultQuiz.setEndDateQuiz(quiz.getEndDate());
 		}
 
 		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
