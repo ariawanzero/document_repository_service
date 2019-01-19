@@ -328,9 +328,16 @@ public class DocumentServiceImpl implements DocumentService {
 			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
 			if(doc.getDescriptionNoTag() != null) {
-				String docShow = doc.getDescriptionNoTag().substring(0, 50);
-				docShow = docShow + "...";
-				doc.setDescriptionNoTag(docShow);
+				if(doc.getDescriptionNoTag().length() > 35) {
+					String docShow = doc.getDescriptionNoTag().substring(0, 35);
+					docShow = docShow + "...";
+					doc.setDescriptionNoTag(docShow);
+				}else {
+					String docShow = doc.getDescriptionNoTag();
+					docShow = docShow + "...";
+					doc.setDescriptionNoTag(docShow);
+				}
+				
 			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
@@ -414,8 +421,12 @@ public class DocumentServiceImpl implements DocumentService {
 		paging.getContent().stream().map(doc -> {
 			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
-			if(doc.getDescriptionNoTag() != null) {
-				String docShow = doc.getDescriptionNoTag().substring(0, 50);
+			if(doc.getDescriptionNoTag().length() > 35) {
+				String docShow = doc.getDescriptionNoTag().substring(0, 35);
+				docShow = docShow + "...";
+				doc.setDescriptionNoTag(docShow);
+			}else {
+				String docShow = doc.getDescriptionNoTag();
 				docShow = docShow + "...";
 				doc.setDescriptionNoTag(docShow);
 			}
@@ -581,12 +592,12 @@ public class DocumentServiceImpl implements DocumentService {
 					ValidFlag.VALID));
 			list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
 			list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
+			list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+					SystemConstant.WILDCARD + StatusConstants.ACTIVE + SystemConstant.WILDCARD));
 			
 			if (!user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && !user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
-						SystemConstant.WILDCARD + StatusConstants.ACTIVE + SystemConstant.WILDCARD));
 			}
 			
 			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
@@ -603,39 +614,50 @@ public class DocumentServiceImpl implements DocumentService {
 				if(doc.getDescriptionNoTag() != null) {
 					String[] docShow = doc.getDescriptionNoTag().toLowerCase().split(request.getName().toLowerCase());
 					String docs;
-					if(docShow[1].length()>350) {
-						docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
-					}else {
-						docs = "<b>"+request.getName()+"</b>".concat(" ");
-						String concats = "";
-						for(int i=1; i<docShow.length; i++) {
-							
-							if(i == 1) {
-								concats = docShow[i].concat(" ").concat(docs);
-							}
-							if(i > 1) {
-								int a = concats.length();
-								a = 350-a;
-								if(docShow[i].length() < a) {
-									concats = concats.concat(docShow[i].concat(" ").concat(docs));
-								}else if(a > 0){
-									if(docShow[i].length() > a) {
-										concats = concats.concat(docShow[i].substring(1, a-docs.length()));
-									}else {
-										concats = concats.concat(docShow[i].substring(1, a-docs.length())).concat(" ").concat(docs);
+					if(docShow.length > 2) {
+						if(docShow[1].length()>350) {
+							docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
+						}else {
+							docs = "<b>"+request.getName()+"</b>".concat(" ");
+							String concats = "";
+							for(int i=1; i<docShow.length; i++) {
+
+								if(i == 1) {
+									concats = docShow[i].concat(" ").concat(docs);
+								}
+								if(i > 1) {
+									int a = concats.length();
+									a = 350-a;
+									if(docShow[i].length() < a) {
+										concats = concats.concat(docShow[i].concat(" ").concat(docs));
+									}else if(a > 0){
+										if(docShow[i].length() > a) {
+											concats = concats.concat(docShow[i].substring(1, a-docs.length()));
+										}else {
+											concats = concats.concat(docShow[i].substring(1, a-docs.length())).concat(" ").concat(docs);
+										}
 									}
 								}
 							}
+							docs = docs.concat(concats)+"...";
 						}
-						docs = docs.concat(concats)+"...";
+					}else {
+						docs = doc.getDescriptionNoTag()+"...";
 					}
 					doc.setDescriptionNoTag(docs);
 				}
 			}else {
 				if(doc.getDescriptionNoTag() != null) {
-					String docShow = doc.getDescriptionNoTag().substring(0, 350);
-					docShow = docShow + "...";
-					doc.setDescriptionNoTag(docShow);
+					if(doc.getDescriptionNoTag().length() > 350) {
+						String docShow = doc.getDescriptionNoTag().substring(0, 350);
+						docShow = docShow + "...";
+						doc.setDescriptionNoTag(docShow);
+					}else {
+						String docShow = doc.getDescriptionNoTag();
+						docShow = docShow + "...";
+						doc.setDescriptionNoTag(docShow);
+					}
+					
 				}
 			}
 			
