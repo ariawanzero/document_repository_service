@@ -354,8 +354,8 @@ public class DocumentServiceImpl implements DocumentService {
 			}else {
 				doc.setView(true);
 			}
-			doc.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(doc.getStartDate()));
-			doc.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(doc.getEndDate()));
+			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
+			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
 			return doc;
 		}).collect(Collectors.toList());
 
@@ -450,8 +450,8 @@ public class DocumentServiceImpl implements DocumentService {
 			}else {
 				doc.setView(true);
 			}
-			doc.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(doc.getStartDate()));
-			doc.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(doc.getEndDate()));
+			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
+			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
 			return doc;
 		}).collect(Collectors.toList());
 
