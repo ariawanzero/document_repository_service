@@ -49,12 +49,21 @@ public class UserEntity extends AuditEntity implements Serializable {
 	private String position;
 	@Transient
 	private String status;
+	@Transient
+	private String expiredDateDisplay;
 	
 	public String getPosition() {
 		return position;
 	}
 	public void setPosition(String position) {
 		this.position = position;
+	}
+	
+	public String getExpiredDateDisplay() {
+		return expiredDateDisplay;
+	}
+	public void setExpiredDateDisplay(String expiredDateDisplay) {
+		this.expiredDateDisplay = expiredDateDisplay;
 	}
 	public String getStatus() {
 		return status;

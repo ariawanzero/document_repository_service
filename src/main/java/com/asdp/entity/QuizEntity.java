@@ -39,6 +39,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private Date startDate;
 	private Date endDate;
 	private Integer totalQuiz;
+	private Integer passedScore;
 	private Integer valid = 1;
 	//if the quiz hasn't started yet, passQuiz will be 0. for flagging can edit or not after the quiz has been started.
 	private Boolean publish = false;
@@ -65,6 +66,14 @@ public class QuizEntity extends AuditEntity implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Integer getPassedScore() {
+		return passedScore;
+	}
+
+	public void setPassedScore(Integer passedScore) {
+		this.passedScore = passedScore;
 	}
 
 	public boolean isAlreadyStart() {
@@ -201,6 +210,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		public static final String NAME_FILE_FIELD = "nameFile";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
 		public static final String QUIZ_FIELD = "quiz";
+		public static final String PASSED_SCORE_FIELD = "passedScore";
 		public static final String JSON_FILTER = "jsonFilterQuiz";
 	}
 	

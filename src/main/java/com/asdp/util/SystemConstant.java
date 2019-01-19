@@ -322,6 +322,7 @@ public class SystemConstant {
 		public static final String EXPIRED = "EXPIRED";
 		public static final String ACTIVE = "ACTIVE";
 		public static final String PENDING = "PENDING";
+		public static final String REJECTED = "REJECTED";
 	}
 
 }

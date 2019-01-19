@@ -388,4 +388,16 @@
 			</column>
 		</insert>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-10" failOnError="true">
+		<loadData encoding="UTF-8" file="liquibase/data/sys_param_data.csv"
+			quotchar='"' separator=","
+			tableName="sys_param">
+		</loadData>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-11" failOnError="true">
+		<update tableName="sys_param">
+			<column  name="type" value="JABATAN"/>
+			<where>code = 'Internship'</where>
+		</update>
+	</changeSet>
 </databaseChangeLog>

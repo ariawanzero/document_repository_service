@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -15,12 +17,15 @@ import com.asdp.entity.MenuEntity;
 import com.asdp.entity.UserEntity;
 import com.asdp.repository.UserRepository;
 import com.asdp.service.MenuService;
+import com.asdp.util.DateTimeFunction;
 import com.asdp.util.JsonFilter;
 import com.asdp.util.JsonUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class CustomTokenEnhancer implements TokenEnhancer {
+
+	private final String SPACE = " ";
 	
 	@Autowired
 	public MenuService menuService;
@@ -29,6 +34,7 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 	public UserRepository userRepo;
 
 	@SuppressWarnings("unchecked")
+	@Transactional
 	@Override
 	public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
@@ -47,6 +53,18 @@ public class CustomTokenEnhancer implements TokenEnhancer {
 			addInfo.put("menu", listMenu2);
 			addInfo.put("clientEmail", userRole.getUsername());
 			addInfo.put("clientName", userRole.getName());
+			addInfo.put("clientRoleName", userRole.getUserRole().getRoleName());
+			if(userRole.getJabatan() != null) {
+				addInfo.put("clientJabatan", userRole.getJabatan().concat(SPACE).concat(userRole.getDivisi()));
+			}else {
+				addInfo.put("clientJabatan", null);
+			}
+
+			if(userRole.getExpiredDate() != null) {
+				addInfo.put("clientExpiredDate", DateTimeFunction.getDateFormatDisplay(userRole.getExpiredDate()));
+			}else {
+				addInfo.put("clientExpiredDate", null);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

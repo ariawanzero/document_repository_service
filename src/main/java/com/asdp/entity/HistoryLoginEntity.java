@@ -34,7 +34,24 @@ public class HistoryLoginEntity implements Serializable{
 	
 	@Transient
 	private String username;
+	@Transient
+	private String divisi;
+	@Transient
+	private String dateLoginDisplay;
 	
+	public String getDateLoginDisplay() {
+		return dateLoginDisplay;
+	}
+	public void setDateLoginDisplay(String dateLoginDisplay) {
+		this.dateLoginDisplay = dateLoginDisplay;
+	}
+	
+	public String getDivisi() {
+		return divisi;
+	}
+	public void setDivisi(String divisi) {
+		this.divisi = divisi;
+	}
 	public String getUsername() {
 		return username;
 	}
