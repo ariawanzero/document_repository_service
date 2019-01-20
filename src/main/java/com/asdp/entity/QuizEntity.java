@@ -42,6 +42,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private Integer valid = 1;
 	//if the quiz hasn't started yet, passQuiz will be 0. for flagging can edit or not after the quiz has been started.
 	private Boolean publish = false;
+	private Integer passScore;
 	private String nameFileJson;
 	
 	@OneToMany(mappedBy = QuestionEntity.Constant.QUIZ_FIELD)
@@ -186,6 +187,15 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	}
 
 
+	public Integer getPassScore() {
+		return passScore;
+	}
+
+	public void setPassScore(Integer passScore) {
+		this.passScore = passScore;
+	}
+
+
 	public static class Constant {
 		private Constant() {}
 		public static final String ID_FIELD = "id";
@@ -201,6 +211,7 @@ public class QuizEntity extends AuditEntity implements Serializable {
 		public static final String NAME_FILE_FIELD = "nameFile";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
 		public static final String QUIZ_FIELD = "quiz";
+		public static final String PASS_SCORE_FIELD = "passScore";
 		public static final String JSON_FILTER = "jsonFilterQuiz";
 	}
 	

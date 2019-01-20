@@ -248,4 +248,9 @@
 	<changeSet author="SEPTA" id="0.0-7" failOnError="true">
 		<renameColumn tableName="history_document" oldColumnName="readDocument" newColumnName="read_document" columnDataType="datetime" />
 	</changeSet>
+	<changeSet author="SEPTA" id="0.0-8" failOnError="true">
+		<addColumn tableName="quiz">
+			<column name="pass_score" type="INTEGER" defaultValue="100" />
+		</addColumn>
+	</changeSet>
 </databaseChangeLog>
