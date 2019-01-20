@@ -50,6 +50,11 @@ public class DocumentController {
 		return documentService.approveDocument(request.getId());
 	}
 	
+	@PostMapping(SystemRestConstant.DocumentConstant.REJECTED_DOCUMENT_ADDR)
+	public String rejectedDocument(@RequestBody DocumentEntity request) throws Exception {
+		return documentService.rejectedDocument(request);
+	}
+	
 	@PostMapping(SystemRestConstant.DocumentConstant.FIND_HISTORY_DOCUMENT_DETAIL_ADDR)
 	public String findHistoryDocumentDetail(@RequestBody DocumentRequest request) throws Exception {
 		return "";

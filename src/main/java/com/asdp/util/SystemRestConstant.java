@@ -53,6 +53,7 @@ public class SystemRestConstant {
 		public static final String SEARCH_DOCUMENT_ADDR = "/searchDocument";
 		public static final String SEARCH_DOCUMENT_PENDING_ADDR = "/searchDocumentPending";
 		public static final String APPROVE_DOCUMENT_ADDR = "/approveDocument";
+		public static final String REJECTED_DOCUMENT_ADDR = "/rejectedDocument";
 		public static final String FIND_HISTORY_DOCUMENT_DETAIL_ADDR = "/findHistoryDocumentDetail";
 		public static final String UPLOAD_DOCUMENT_ADDR = "/uploadDocument";
 		public static final String READ_DOCUMENT_DETAIL_ADDR = "/readDocumentDetail";

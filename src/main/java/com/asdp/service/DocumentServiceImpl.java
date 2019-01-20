@@ -170,9 +170,9 @@ public class DocumentServiceImpl implements DocumentService {
 			}
 
 			if(user.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
-				toUpdate.setStatus(StatusConstants.PENDING);
+				request.setStatus(StatusConstants.PENDING);
 			}else if(!toUpdate.getStatus().equals(StatusConstants.PENDING) && !toUpdate.getStatus().equals(StatusConstants.REJECTED)){
-				toUpdate.setStatus(StatusConstants.ACTIVE);
+				request.setStatus(StatusConstants.ACTIVE);
 			}else {
 				request.setStatus(toUpdate.getStatus());
 			}
@@ -413,13 +413,10 @@ public class DocumentServiceImpl implements DocumentService {
 				list.add(criteriaBuilder.equal(root.<String>get(DocumentEntity.Constant.VALID_FIELD),
 						ValidFlag.VALID));
 				list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
-				list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.CREATED_BY_FIELD)),
 						SystemConstant.WILDCARD + user.getUsername() + SystemConstant.WILDCARD));
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
-						SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
-						SystemConstant.WILDCARD + StatusConstants.PENDING + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.notEqual(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						StatusConstants.ACTIVE ));
 			}
 
 
@@ -491,6 +488,28 @@ public class DocumentServiceImpl implements DocumentService {
 		documentRepo.save(document);
 
 		sendNotificationQuiz(document);
+
+		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
+		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
+	}
+	
+	@Override
+	public String rejectedDocument(DocumentEntity request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
+
+		DocumentEntity document = documentRepo.findById(request.getId()).orElseThrow(() -> new UserException("400", "Document not found"));
+		document.setModifiedBy(user.getUsername());
+		document.setModifiedDate(new Date());
+		document.setStatus(StatusConstants.REJECTED);
+		document.setReason(request.getReason());
+
+		documentRepo.save(document);
+
+		/*sendNotificationQuiz(document);*/
 
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
@@ -643,13 +662,16 @@ public class DocumentServiceImpl implements DocumentService {
 								if(i > 1) {
 									int a = concats.length();
 									a = 350-a;
+									if(a == 0) {
+										break;
+									}
 									if(docShow[i].length() < a) {
 										concats = concats.concat(docShow[i].concat(" ").concat(docs));
-									}else if(a > 0){
-										if(docShow[i].length() > a) {
-											concats = concats.concat(docShow[i].substring(1, a-docs.length()));
+									}else if(docShow[i].length() > 0 && concats.length() < 350){
+										if(docShow[i].length() < a) {
+											concats = concats.concat(docShow[i].substring(0, a)).concat(" ").concat(docs);
 										}else {
-											concats = concats.concat(docShow[i].substring(1, a-docs.length())).concat(" ").concat(docs);
+											concats = concats.concat(docShow[i].substring(0, a));
 										}
 									}
 								}
