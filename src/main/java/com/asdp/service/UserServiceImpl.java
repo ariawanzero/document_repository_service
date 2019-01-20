@@ -49,10 +49,10 @@ import com.asdp.util.JsonUtil;
 import com.asdp.util.PasswordUtils;
 import com.asdp.util.StringFunction;
 import com.asdp.util.SystemConstant;
-import com.asdp.util.UserException;
 import com.asdp.util.SystemConstant.StatusConstants;
 import com.asdp.util.SystemConstant.UserRoleConstants;
 import com.asdp.util.SystemConstant.ValidFlag;
+import com.asdp.util.UserException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class UserServiceImpl implements UserDetailsService, UserService {
@@ -309,8 +309,22 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		Specification<HistoryLoginEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
 			if (request.getStartDate() != null && request.getEndDate() != null) {
-				Date dayAfter = new Date(request.getEndDate().getTime()+(24*60*60*1000));
-				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), dayAfter));
+				
+				Calendar calStart = Calendar.getInstance();
+				calStart.setTime(DateTimeFunction.getDateMinus7Hour(request.getStartDate()));
+				calStart.set(Calendar.HOUR_OF_DAY,00);
+				calStart.set(Calendar.MINUTE,00);
+				calStart.set(Calendar.SECOND,0);
+				request.setStartDate(calStart.getTime());
+				
+				Calendar calEnd = Calendar.getInstance();
+				calEnd.setTime(DateTimeFunction.getDateMinus7Hour(request.getEndDate()));
+				calEnd.set(Calendar.HOUR_OF_DAY,23);
+				calEnd.set(Calendar.MINUTE,59);
+				calEnd.set(Calendar.SECOND,59);
+				request.setEndDate(calEnd.getTime());
+				
+				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), request.getStartDate(), request.getEndDate()));
 			}
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};

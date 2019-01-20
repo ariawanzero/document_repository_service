@@ -169,13 +169,16 @@ public class DocumentServiceImpl implements DocumentService {
 				throw new UserException("400", "Start Date cannot Greater than End Date !");
 			}
 
-			BeanUtils.copyProperties(request, toUpdate);
-
 			if(user.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
 				toUpdate.setStatus(StatusConstants.PENDING);
-			}else {
+			}else if(!toUpdate.getStatus().equals(StatusConstants.PENDING) && !toUpdate.getStatus().equals(StatusConstants.REJECTED)){
 				toUpdate.setStatus(StatusConstants.ACTIVE);
+			}else {
+				request.setStatus(toUpdate.getStatus());
 			}
+			
+			BeanUtils.copyProperties(request, toUpdate);
+
 			toUpdate.setModifiedBy(users.getUsername());
 			toUpdate.setModifiedDate(new Date());
 		}else {
