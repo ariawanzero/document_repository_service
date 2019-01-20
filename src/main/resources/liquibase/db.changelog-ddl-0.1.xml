@@ -250,7 +250,19 @@
 	</changeSet>
 	<changeSet author="SEPTA" id="0.0-8" failOnError="true">
 		<addColumn tableName="quiz">
-			<column name="pass_score" type="INTEGER" defaultValue="100" />
+			<column name="passed_score" type="INTEGER" defaultValue="100"/>
+		</addColumn>
+		<createTable tableName="sys_param">
+			<column name="code" type="VARCHAR(100)">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="value" type="VARCHAR(100)" />
+			<column name="type" type="VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+	<changeSet author="SEPTA" id="0.0-9" failOnError="true">
+		<addColumn tableName="document">
+			<column name="reason" type="VARCHAR(200)" />
 		</addColumn>
 	</changeSet>
 </databaseChangeLog>

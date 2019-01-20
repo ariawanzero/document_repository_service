@@ -731,4 +731,27 @@ public class DateTimeFunction {
 		return cal.getTime();
 	}
 	
+	public static String getDatetimeDayFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("EEEEE, HH:mm dd-MM-yyyy");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static String getDatetimeFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("HH:mm dd-MM-yyyy");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static String getDateFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static Date getDatetimeFormat(Date date) throws Exception{
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		String dateString = format.format(date);
+		return format.parse(dateString);   
+	}
 }

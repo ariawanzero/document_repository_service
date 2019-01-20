@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -197,6 +199,8 @@ public class QuizServiceImpl implements QuizService{
 			if(quiz.getPublish() && DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
 				quiz.setAlreadyStart(true);
 			}
+			quiz.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getStartDate()));
+			quiz.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getEndDate()));
 			return quiz;
 		}).collect(Collectors.toList());
 
@@ -246,6 +250,12 @@ public class QuizServiceImpl implements QuizService{
 			paging.getContent().stream().map(quiz -> {
 				ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
 				quiz.setScore(resultQuiz.getScore());
+				return quiz;
+			}).collect(Collectors.toList());
+		}else {
+			paging.getContent().stream().map(quiz -> {
+				quiz.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getStartDate()));
+				quiz.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getEndDate()));
 				return quiz;
 			}).collect(Collectors.toList());
 		}
@@ -442,11 +452,13 @@ public class QuizServiceImpl implements QuizService{
 				questions.remove(randomIndex);
 			}
 			resultQuiz = new ResultQuizEntity();
-			String mapQuesions = JsonUtil.generateJson(mapQuestion);
+			Map<String, String> treeMapQuestion = new TreeMap<String, String>(mapQuestion);
+			String mapQuesions = JsonUtil.generateJson(treeMapQuestion);
 			resultQuiz.setQuestionAnswerJson(mapQuesions);
-			resultQuiz.setQuestionAnswer(mapQuestion);
+			resultQuiz.setQuestionAnswer(treeMapQuestion);
 			resultQuiz.setQuiz(quiz.getId());
 			resultQuiz.setUsername(users.getUsername());
+			listQuestionFinal.sort(Comparator.comparing(QuestionEntity::getId));
 			resultQuiz.setQuestions(listQuestionFinal);
 			resultQuiz.setEndDateQuiz(quiz.getEndDate());
 

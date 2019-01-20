@@ -2,6 +2,7 @@ package com.asdp.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -92,15 +93,39 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 				throw new UsernameNotFoundException("Username has been Expired.");
 			}
 		}
-		this.saveHistoryLogin(user);
+		try {
+			if(!user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				this.saveHistoryLogin(user);
+			}
+		} catch (Exception e) {
+			throw new UsernameNotFoundException("Cannot save history login");
+		}
 		return new User(user.getUsername(), user.getPassword(), getAuthority(user.getUserRole().getRoleName()));
 	}
 	
-	private void saveHistoryLogin(UserEntity user){
-		HistoryLoginEntity hisLogin = new HistoryLoginEntity();
-		hisLogin.setUser(user);
-		hisLogin.setDateLogin(new Date());
-		hisRepo.save(hisLogin);
+	private void saveHistoryLogin(UserEntity user) throws Exception{
+		Calendar calStart = Calendar.getInstance();
+		calStart.set(Calendar.HOUR_OF_DAY,00);
+		calStart.set(Calendar.MINUTE,00);
+		calStart.set(Calendar.SECOND,0);
+		Date dateStart = calStart.getTime();
+		
+		Calendar calEnd = Calendar.getInstance();
+		calEnd.set(Calendar.HOUR_OF_DAY,23);
+		calEnd.set(Calendar.MINUTE,59);
+		calEnd.set(Calendar.SECOND,59);
+		Date dateEnd = calEnd.getTime();
+		
+		HistoryLoginEntity his = hisRepo.findByUserAndDateLoginBetween(user, dateStart, dateEnd);
+		if(his != null) {
+			his.setDateLogin(new Date());
+			hisRepo.save(his);
+		}else {
+			HistoryLoginEntity hisLogin = new HistoryLoginEntity();
+			hisLogin.setUser(user);
+			hisLogin.setDateLogin(new Date());
+			hisRepo.save(hisLogin);
+		}
 	}
 	
 	private List<SimpleGrantedAuthority> getAuthority(String role) {
@@ -159,6 +184,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 			user.setUserRoleId(user.getUserRole().getUserRoleCode());
 			user.setUserRoleName(user.getUserRole().getRoleName());
 			user.setPosition(user.getJabatan().concat(SPACE).concat(user.getDivisi()));
+			user.setExpiredDateDisplay(DateTimeFunction.getDateFormatDisplay(user.getExpiredDate()));
 			if(user.getValid() == 1 && !DateTimeFunction.getExpiredDate(user.getExpiredDate())){
 				user.setStatus(StatusConstants.ACTIVE);
 			}else{
@@ -291,7 +317,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		Page<HistoryLoginEntity> paging = hisRepo.findAll(spec, pageable);
 		   
 		paging.getContent().stream().map(history -> {
-			history.setUsername(history.getUser().getUsername());
+			history.setUsername(history.getUser().getName());
+			history.setDivisi(history.getUser().getDivisi());
+			history.setDateLoginDisplay(DateTimeFunction.getDatetimeFormatDisplay(history.getDateLogin()));
 			return history;
 		}).collect(Collectors.toList());
 		

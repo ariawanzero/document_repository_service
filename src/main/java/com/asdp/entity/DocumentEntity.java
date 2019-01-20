@@ -40,6 +40,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private Date endDate;
 	private String nameFileJson;
 	private String status;
+	private String reason;
 	private boolean twitter = false;
 	private boolean facebook = false;
 	private boolean instagram = false;	
@@ -52,6 +53,12 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	@Transient
 	private int countRead;
 	@Transient
+	private String startDateDisplay;
+	@Transient
+	private String endDateDisplay;
+	@Transient
+	private String createdDateDisplay;
+	@Transient
 	private boolean view = false;
 	
 	public String getId() {
@@ -61,6 +68,30 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		this.id = id;
 	}
 	
+	public String getCreatedDateDisplay() {
+		return createdDateDisplay;
+	}
+	public void setCreatedDateDisplay(String createdDateDisplay) {
+		this.createdDateDisplay = createdDateDisplay;
+	}
+	public String getStartDateDisplay() {
+		return startDateDisplay;
+	}
+	public void setStartDateDisplay(String startDateDisplay) {
+		this.startDateDisplay = startDateDisplay;
+	}
+	public String getEndDateDisplay() {
+		return endDateDisplay;
+	}
+	public void setEndDateDisplay(String endDateDisplay) {
+		this.endDateDisplay = endDateDisplay;
+	}
+	public String getReason() {
+		return reason;
+	}
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
 	public boolean isView() {
 		return view;
 	}
@@ -201,6 +232,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		public static final String CATEGORY_FIELD = "category";
 		public static final String TUMBNAIL_FIELD = "tumbnail";
 		public static final String NAME_FILE_FIELD = "nameFile";
+		public static final String CREATED_BY_FIELD = "createdBy";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
 		public static final String URL_PREVIEW_FIELD = "urlPreview";
 		public static final String JSON_FILTER = "jsonFilterDocument";

@@ -245,21 +245,26 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentEntity document = documentRepo.findById(id).orElseThrow(() -> new UserException("400", "Document not found"));
 		document.setStartDate(DateTimeFunction.getDatePlus7Hour(document.getStartDate()));
 		document.setEndDate(DateTimeFunction.getDatePlus7Hour(document.getEndDate()));
-
-		HistoryDocumentEntity hisDocument = historyDocumentRepo.findByUsernameAndDocument(user.getUsername(), id);
-		if(hisDocument==null) {
-			hisDocument = new HistoryDocumentEntity();
-			hisDocument.setUsername(user.getUsername());
-			hisDocument.setDocument(id);
-			hisDocument.setReadDocument(new Date());
-			historyDocumentRepo.save(hisDocument);
-			historyDocumentRepo.flush();
+		
+		if(!document.getStatus().equals(StatusConstants.PENDING) && !document.getStatus().equals(StatusConstants.REJECTED)) {
+			HistoryDocumentEntity hisDocument = historyDocumentRepo.findByUsernameAndDocument(user.getUsername(), id);
+			if(hisDocument==null) {
+				hisDocument = new HistoryDocumentEntity();
+				hisDocument.setUsername(user.getUsername());
+				hisDocument.setDocument(id);
+				hisDocument.setReadDocument(new Date());
+				historyDocumentRepo.save(hisDocument);
+				historyDocumentRepo.flush();
+			}
 		}
 		document.setCountRead(historyDocumentRepo.countByDocument(id));
+		UserEntity userss = userRepo.findByUsername(document.getCreatedBy());
+		document.setCreatedBy(userss.getName());
 
 		if(document.getNameFileJson() != null) {
 			document.setNameFile(JsonUtil.parseJson(document.getNameFileJson(), ArrayList.class));
 		}
+		document.setCreatedDateDisplay(DateTimeFunction.getDatetimeDayFormatDisplay(document.getCreatedDate()));
 		document.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 				.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
 
@@ -349,6 +354,8 @@ public class DocumentServiceImpl implements DocumentService {
 			}else {
 				doc.setView(true);
 			}
+			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
+			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
 			return doc;
 		}).collect(Collectors.toList());
 
@@ -398,18 +405,20 @@ public class DocumentServiceImpl implements DocumentService {
 					list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
 							SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
 				}
+				list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 			}else {
 				list.add(criteriaBuilder.equal(root.<String>get(DocumentEntity.Constant.VALID_FIELD),
 						ValidFlag.VALID));
 				list.add(criteriaBuilder.greaterThan(root.get(DocumentEntity.Constant.END_DATE_FIELD), new Date()));
 				list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
-				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
-						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.CREATED_BY_FIELD)),
+						SystemConstant.WILDCARD + user.getUsername() + SystemConstant.WILDCARD));
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
 						SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						SystemConstant.WILDCARD + StatusConstants.PENDING + SystemConstant.WILDCARD));
 			}
 
-			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
@@ -435,11 +444,14 @@ public class DocumentServiceImpl implements DocumentService {
 				doc.setStatus(StatusConstants.EXPIRED);
 				listExpired.add(doc);
 			}
-			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)
+					|| user.getUserRole().getRoleName().equals(UserRoleConstants.USER)) {
 				doc.setView(false);
 			}else {
 				doc.setView(true);
 			}
+			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
+			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
 			return doc;
 		}).collect(Collectors.toList());
 
@@ -614,7 +626,7 @@ public class DocumentServiceImpl implements DocumentService {
 				if(doc.getDescriptionNoTag() != null) {
 					String[] docShow = doc.getDescriptionNoTag().toLowerCase().split(request.getName().toLowerCase());
 					String docs;
-					if(docShow.length > 2) {
+					if(docShow.length > 1) {
 						if(docShow[1].length()>350) {
 							docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
 						}else {

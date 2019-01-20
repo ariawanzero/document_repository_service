@@ -24,6 +24,8 @@ import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
 import com.asdp.service.StorageService;
 import com.asdp.service.StorageServiceImpl;
+import com.asdp.service.SystemParameterService;
+import com.asdp.service.SystemParameterServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
 import com.asdp.util.CommonResponseGenerator;
@@ -59,6 +61,11 @@ public class Application implements CommandLineRunner {
 	@Bean
 	public DocumentService documentService() {
 		return new DocumentServiceImpl();
+	}
+	
+	@Bean
+	public SystemParameterService systemParameterService() {
+		return new SystemParameterServiceImpl();
 	}
 	
 	@Bean
