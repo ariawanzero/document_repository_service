@@ -15,5 +15,6 @@ public interface DocumentService {
 	String searchDocumentAdvanced(DocumentRequest request) throws Exception;
 	String approveDocument(String id) throws Exception;
 	String rejectedDocument(DocumentEntity request) throws Exception;
-	String findHistoryDocumentDetail(DocumentRequest request) throws Exception;
+	String searchDocumentHistory(DocumentRequest request) throws Exception;
+	String searchDetailDocumentHistory(DocumentRequest request) throws Exception;
 }

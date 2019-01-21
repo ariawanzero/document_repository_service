@@ -55,9 +55,14 @@ public class DocumentController {
 		return documentService.rejectedDocument(request);
 	}
 	
-	@PostMapping(SystemRestConstant.DocumentConstant.FIND_HISTORY_DOCUMENT_DETAIL_ADDR)
-	public String findHistoryDocumentDetail(@RequestBody DocumentRequest request) throws Exception {
-		return "";
+	@PostMapping(SystemRestConstant.DocumentConstant.SEARCH_DOCUMENT_HISTORY_ADDR)
+	public String searchDocumentHistory(@RequestBody DocumentRequest request) throws Exception {
+		return documentService.searchDocumentHistory(request);
+	}
+	
+	@PostMapping(SystemRestConstant.DocumentConstant.SEARCH_DETAIL_DOCUMENT_HISTORY_ADDR)
+	public String searchDetailDocumentHistory(@RequestBody DocumentRequest request) throws Exception {
+		return documentService.searchDetailDocumentHistory(request);
 	}
 	
 	@PostMapping(SystemRestConstant.DocumentConstant.READ_DOCUMENT_DETAIL_ADDR)

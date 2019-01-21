@@ -176,7 +176,7 @@ public class DocumentServiceImpl implements DocumentService {
 			}else {
 				request.setStatus(toUpdate.getStatus());
 			}
-			
+
 			BeanUtils.copyProperties(request, toUpdate);
 
 			toUpdate.setModifiedBy(users.getUsername());
@@ -248,8 +248,9 @@ public class DocumentServiceImpl implements DocumentService {
 		DocumentEntity document = documentRepo.findById(id).orElseThrow(() -> new UserException("400", "Document not found"));
 		document.setStartDate(DateTimeFunction.getDatePlus7Hour(document.getStartDate()));
 		document.setEndDate(DateTimeFunction.getDatePlus7Hour(document.getEndDate()));
-		
-		if(!document.getStatus().equals(StatusConstants.PENDING) && !document.getStatus().equals(StatusConstants.REJECTED)) {
+
+		if(!document.getStatus().equals(StatusConstants.PENDING) && !document.getStatus().equals(StatusConstants.REJECTED) 
+				&& !user.getUsername().equals("superuser")) {
 			HistoryDocumentEntity hisDocument = historyDocumentRepo.findByUsernameAndDocument(user.getUsername(), id);
 			if(hisDocument==null) {
 				hisDocument = new HistoryDocumentEntity();
@@ -345,7 +346,7 @@ public class DocumentServiceImpl implements DocumentService {
 					docShow = docShow + "...";
 					doc.setDescriptionNoTag(docShow);
 				}
-				
+
 			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
@@ -467,9 +468,126 @@ public class DocumentServiceImpl implements DocumentService {
 	}
 
 	@Override
-	public String findHistoryDocumentDetail(DocumentRequest request) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public String searchDocumentHistory(DocumentRequest request) throws Exception {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object principal = authentication.getPrincipal();
+		UserEntity users = new UserEntity();
+		BeanUtils.copyProperties(principal, users);
+		UserEntity user = userRepo.findByUsername(users.getUsername());
+
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+				new Sort(Sort.Direction.ASC, DocumentEntity.Constant.NAME_FIELD));
+
+		Specification<DocumentEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+
+			if (!StringFunction.isEmpty(request.getName())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.NAME_FIELD)),
+						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (!StringFunction.isEmpty(request.getDivisi())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
+						SystemConstant.WILDCARD + request.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (!StringFunction.isEmpty(request.getType())) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.TYPE_FIELD)),
+						SystemConstant.WILDCARD + request.getType().toLowerCase() + SystemConstant.WILDCARD));
+			}
+
+			if (user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) || user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
+				if (!StringFunction.isEmpty(request.getStatus())) {
+					list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+							SystemConstant.WILDCARD + request.getStatus().toLowerCase() + SystemConstant.WILDCARD));
+				}
+				list.add(criteriaBuilder.notEqual(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						StatusConstants.PENDING ));
+				list.add(criteriaBuilder.notEqual(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
+						StatusConstants.REJECTED ));
+			}
+
+
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+
+		Page<DocumentEntity> paging = documentRepo.findAll(spec, pageable);
+
+		List<DocumentEntity> listExpired = new ArrayList<>();
+
+		paging.getContent().stream().map(doc -> {
+			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
+					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
+			if(doc.getDescriptionNoTag().length() > 35) {
+				String docShow = doc.getDescriptionNoTag().substring(0, 35);
+				docShow = docShow + "...";
+				doc.setDescriptionNoTag(docShow);
+			}else {
+				String docShow = doc.getDescriptionNoTag();
+				docShow = docShow + "...";
+				doc.setDescriptionNoTag(docShow);
+			}
+			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
+				doc.setValid(SystemConstant.ValidFlag.INVALID);
+				doc.setStatus(StatusConstants.EXPIRED);
+				listExpired.add(doc);
+			}
+			doc.setCountRead(historyDocumentRepo.countByDocument(doc.getId()));
+			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
+			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
+			return doc;
+		}).collect(Collectors.toList());
+
+		if(listExpired.size() > 0) updateStatusInvalid(listExpired);
+
+		CommonResponsePaging<DocumentEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER));
+
+		return writer.writeValueAsString(restResponse);
+	}
+	
+	@Override
+	public String searchDetailDocumentHistory(DocumentRequest request) throws Exception {
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+				new Sort(Sort.Direction.ASC, HistoryDocumentEntity.Constant.READ_DOCUMENT_FIELD));
+
+		Specification<HistoryDocumentEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+			list.add(criteriaBuilder.equal(root.<String>get(HistoryDocumentEntity.Constant.DOCUMENT_FIELD), request.getId()));
+			list.add(criteriaBuilder.notEqual(root.<String>get(HistoryDocumentEntity.Constant.USERNAME_FIELD), "superuser"));
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+
+		Page<HistoryDocumentEntity> paging = historyDocumentRepo.findAll(spec, pageable);
+
+
+		paging.getContent().stream().map(his -> {
+			his.setReadDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(his.getReadDocument()));
+			UserEntity user = userRepo.findByUsername(his.getUsername());
+			his.setDivisi(user.getDivisi());
+			his.setUsername(user.getName());
+			return his;
+		}).collect(Collectors.toList());
+		
+		if(!StringFunction.isEmpty(request.getDivisi())){
+			 paging = PageableExecutionUtils.getPage(
+			    		paging.getContent().stream().filter(a -> a.getDivisi().equals(request.getDivisi()))
+						.collect(Collectors.toList()),
+						pageable,
+						paging::getTotalElements);
+		}
+
+
+		CommonResponsePaging<HistoryDocumentEntity> restResponse = comGen
+				.generateCommonResponsePaging(new CommonPaging<>(paging));
+
+		ObjectWriter writer = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(HistoryDocumentEntity.Constant.JSON_FILTER));
+
+		return writer.writeValueAsString(restResponse);
 	}
 
 	@Override
@@ -492,7 +610,7 @@ public class DocumentServiceImpl implements DocumentService {
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
-	
+
 	@Override
 	public String rejectedDocument(DocumentEntity request) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -593,7 +711,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 	}
-	
+
 	@Override
 	public String searchDocumentAdvanced(DocumentRequest request) throws Exception {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -603,7 +721,7 @@ public class DocumentServiceImpl implements DocumentService {
 		UserEntity user = userRepo.findByUsername(users.getUsername());
 
 		Pageable pageable;
-		
+
 		if(request.getName().equals("news")) {
 			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
 					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
@@ -628,12 +746,12 @@ public class DocumentServiceImpl implements DocumentService {
 			list.add(criteriaBuilder.lessThan(root.get(DocumentEntity.Constant.START_DATE_FIELD), new Date()));
 			list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.STATUS_FIELD)),
 					SystemConstant.WILDCARD + StatusConstants.ACTIVE + SystemConstant.WILDCARD));
-			
+
 			if (!user.getUserRole().getRoleName().equals(UserRoleConstants.ADMIN) && !user.getUserRole().getRoleName().equals(UserRoleConstants.SUPERADMIN)) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
-			
+
 			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
@@ -694,20 +812,20 @@ public class DocumentServiceImpl implements DocumentService {
 						docShow = docShow + "...";
 						doc.setDescriptionNoTag(docShow);
 					}
-					
+
 				}
 			}
-			
+
 			if(request.getName().equals("popular")) {
 				doc.setCountRead(historyDocumentRepo.countByDocument(doc.getId()));
 			}
 			return doc;
 		}).collect(Collectors.toList());
-		
+
 		paging = PageableExecutionUtils.getPage(
-						paging.getContent().stream().sorted(Comparator.comparing(DocumentEntity::getCountRead).reversed()).collect(Collectors.toList()),
-						pageable,
-						paging::getTotalElements);
+				paging.getContent().stream().sorted(Comparator.comparing(DocumentEntity::getCountRead).reversed()).collect(Collectors.toList()),
+				pageable,
+				paging::getTotalElements);
 
 		CommonResponsePaging<DocumentEntity> restResponse = comGen
 				.generateCommonResponsePaging(new CommonPaging<>(paging));

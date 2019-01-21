@@ -3,9 +3,17 @@ package com.asdp.request;
 public class DocumentRequest {
 	private String name;
 	private String type;
+	private String id;
 	private String divisi;
 	private String status;
 	private int page;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getName() {
 		return name;
 	}
