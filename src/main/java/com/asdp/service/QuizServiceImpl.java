@@ -5,12 +5,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -196,6 +199,8 @@ public class QuizServiceImpl implements QuizService{
 			if(quiz.getPublish() && DateTimeFunction.getTimeExpired(quiz.getStartDate())) {
 				quiz.setAlreadyStart(true);
 			}
+			quiz.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getStartDate()));
+			quiz.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getEndDate()));
 			return quiz;
 		}).collect(Collectors.toList());
 
@@ -245,6 +250,17 @@ public class QuizServiceImpl implements QuizService{
 			paging.getContent().stream().map(quiz -> {
 				ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
 				quiz.setScore(resultQuiz.getScore());
+				if(quiz.getPassedScore() >= resultQuiz.getScore()) {
+					quiz.setPassQuiz("Pass");
+				}else {
+					quiz.setPassQuiz("Not Pass");
+				}
+				return quiz;
+			}).collect(Collectors.toList());
+		}else {
+			paging.getContent().stream().map(quiz -> {
+				quiz.setStartDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getStartDate()));
+				quiz.setEndDateDisplay(DateTimeFunction.getDatetimeFormatDisplay(quiz.getEndDate()));
 				return quiz;
 			}).collect(Collectors.toList());
 		}
@@ -333,6 +349,11 @@ public class QuizServiceImpl implements QuizService{
 
 			request.setStartDate(DateTimeFunction.getDateMinus7Hour(request.getStartDate()));
 			request.setEndDate(DateTimeFunction.getDateMinus7Hour(request.getEndDate()));
+			
+			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
+				throw new UserException("400", "Start Date cannot Greater than End Date !");
+			}
+			
 			BeanUtils.copyProperties(request, toUpdate);
 
 
@@ -342,6 +363,10 @@ public class QuizServiceImpl implements QuizService{
 			toUpdate.setStartDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getStartDate()));
 			toUpdate.setEndDate(DateTimeFunction.getDateMinus7Hour(toUpdate.getEndDate()));
 
+			if(DateTimeFunction.getStartGreaterThanEnd(request.getStartDate(), request.getEndDate())) {
+				throw new UserException("400", "Start Date cannot Greater than End Date !");
+			}
+			
 			toUpdate.setCreatedBy(users.getUsername());
 			toUpdate.setCreatedDate(new Date());
 		}
@@ -432,17 +457,21 @@ public class QuizServiceImpl implements QuizService{
 				questions.remove(randomIndex);
 			}
 			resultQuiz = new ResultQuizEntity();
-			String mapQuesions = JsonUtil.generateJson(mapQuestion);
+			Map<String, String> treeMapQuestion = new TreeMap<String, String>(mapQuestion);
+			String mapQuesions = JsonUtil.generateJson(treeMapQuestion);
 			resultQuiz.setQuestionAnswerJson(mapQuesions);
-			resultQuiz.setQuestionAnswer(mapQuestion);
+			resultQuiz.setQuestionAnswer(treeMapQuestion);
 			resultQuiz.setQuiz(quiz.getId());
 			resultQuiz.setUsername(users.getUsername());
+			listQuestionFinal.sort(Comparator.comparing(QuestionEntity::getId));
 			resultQuiz.setQuestions(listQuestionFinal);
+			resultQuiz.setEndDateQuiz(quiz.getEndDate());
 
 			resultQuizRepo.save(resultQuiz);
 		} else {
 			questions = this.getListQuestions(resultQuiz.getQuestionAnswer());
 			resultQuiz.setQuestions(questions);
+			resultQuiz.setEndDateQuiz(quiz.getEndDate());
 		}
 
 		CommonResponse<ResultQuizEntity> response = new CommonResponse<>(resultQuiz);
@@ -479,6 +508,11 @@ public class QuizServiceImpl implements QuizService{
 			QuizEntity quizEn = quiz.get();
 			resultQuiz.setQuizName(quizEn.getName());
 			resultQuiz.setEndDateQuiz(quizEn.getEndDate());
+			if(quizEn.getPassedScore() <= resultQuiz.getScore()) {
+				resultQuiz.setPassQuiz("Pass");
+			}else {
+				resultQuiz.setPassQuiz("Not Pass");
+			}
 			try {
 				resultQuiz.setQuestions(this.getListQuestions(resultQuiz.getQuestionAnswer()));
 			} catch (JsonParseException e) {
@@ -605,13 +639,20 @@ public class QuizServiceImpl implements QuizService{
 	@Async
 	public void sendNotificationQuiz(QuizEntity quiz) throws Exception{
 		CriteriaBuilder critBuilder = em.getCriteriaBuilder();
-
+		quiz.setDivisi(quiz.getDivisi().replace("[", "").replace("]", "").replace("\"", ""));
+		String[] split = quiz.getDivisi().split(",");
+		List<String> list = Arrays.asList(split);
+		
 		CriteriaQuery<UserEntity> query = critBuilder.createQuery(UserEntity.class);
 		Root<UserEntity> root = query.from(UserEntity.class);
 		List<Predicate> lstWhere = new ArrayList<Predicate>();
-		lstWhere.add(critBuilder.like(root.get(UserEntity.Constant.DIVISI_FIELD), 
-				SystemConstant.WILDCARD + quiz.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
+		javax.persistence.criteria.Expression<String> parentExpression = root.get(QuizEntity.Constant.DIVISI_FIELD);
+		javax.persistence.criteria.Predicate parentPredicate = parentExpression.in(list);
+		lstWhere.add(parentPredicate);
+		lstWhere.add(critBuilder.equal(root.get(QuizEntity.Constant.VALID_FIELD), 
+				ValidFlag.VALID));
 		query.select(root).where(lstWhere.toArray(new Predicate[] {}));
+		
 		List<UserEntity> users = em.createQuery(query).getResultList();
 		users.stream().filter(user -> user.getUserRole().getUserRoleCode() != "0" && user.getUserRole().getUserRoleCode() != "1");
 
@@ -709,6 +750,13 @@ public class QuizServiceImpl implements QuizService{
 				record.add(user.getName());
 				record.add(user.getDivisi());
 				record.add(String.valueOf(data.getScore()));
+				Optional<QuizEntity> quizOp = quizRepo.findById(data.getQuiz());
+				QuizEntity quiz = quizOp.get();
+				if(quiz.getPassedScore() >= data.getScore()) {
+					record.add("Pass");
+				}else {
+					record.add("Not Pass");
+				}
 				try {
 					printer.printRecord(record);
 				} catch (IOException e) {

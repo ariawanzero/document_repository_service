@@ -14,6 +14,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
+import com.asdp.service.DocumentService;
+import com.asdp.service.DocumentServiceImpl;
 import com.asdp.service.MenuService;
 import com.asdp.service.MenuServiceImpl;
 import com.asdp.service.QuizService;
@@ -22,6 +24,8 @@ import com.asdp.service.ResponseMappingDaoService;
 import com.asdp.service.ResponseMappingDaoServiceImpl;
 import com.asdp.service.StorageService;
 import com.asdp.service.StorageServiceImpl;
+import com.asdp.service.SystemParameterService;
+import com.asdp.service.SystemParameterServiceImpl;
 import com.asdp.service.UserService;
 import com.asdp.service.UserServiceImpl;
 import com.asdp.util.CommonResponseGenerator;
@@ -52,6 +56,16 @@ public class Application implements CommandLineRunner {
 	@Bean
 	public QuizService quizService() {
 		return new QuizServiceImpl();
+	}
+	
+	@Bean
+	public DocumentService documentService() {
+		return new DocumentServiceImpl();
+	}
+	
+	@Bean
+	public SystemParameterService systemParameterService() {
+		return new SystemParameterServiceImpl();
 	}
 	
 	@Bean

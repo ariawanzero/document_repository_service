@@ -379,4 +379,39 @@
 			<where>id=19</where>
 		</delete>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-9" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="DOCUMENTNOTIF" />
+			<column name="subject" value="New Document Published" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>The document has been published, please check infoasdp to see the document before expired date.<br/>Document Name: %s<br/>Document Date: %s<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-10" failOnError="true">
+		<loadData encoding="UTF-8" file="liquibase/data/sys_param_data.csv"
+			quotchar='"' separator=","
+			tableName="sys_param">
+		</loadData>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-11" failOnError="true">
+		<update tableName="sys_param">
+			<column  name="type" value="JABATAN"/>
+			<where>code = 'Internship'</where>
+		</update>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-12" failOnError="true">
+		<update tableName="sys_menu">
+			<column  name="url" value="user/history"/>
+			<where>menu_code = 'HISTORYUSER'</where>
+		</update>
+		<update tableName="sys_menu">
+			<column  name="url" value="document/pending"/>
+			<where>menu_code = 'PENDINGAPPROVAL'</where>
+		</update>
+		<update tableName="sys_menu">
+			<column  name="url" value="document/history"/>
+			<where>menu_code = 'HISTORYDOCUMENT'</where>
+		</update>
+	</changeSet>
 </databaseChangeLog>

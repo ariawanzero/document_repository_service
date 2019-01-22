@@ -1,0 +1,25 @@
+code,value,type
+URGENT,Urgent,CATEGORY
+GENERAL,General,CATEGORY
+Komersial,Komersial,DIVISI
+Pelayanan dan Fasilitas,Pelayanan & Fasilitas,DIVISI
+Teknik dan Operasional,Teknik & Operasional,DIVISI
+Sumber Daya Manusia danU mum,Sumber Daya Manusia & Umum,DIVISI
+Keuangan,Keuangan,DIVISI
+Other,Other,DIVISI
+Direktur,Direktur,JABATAN
+Vice President,Vice President,JABATAN
+General Manager Cabang,General Manager Cabang,JABATAN
+Sekretaris Perusahaan,Sekretaris Perusahaan,JABATAN
+Manager,Manager,JABATAN
+Staff,Staff,JABATAN
+Internship,Internship, JABATAN
+KEPDIR,Keputusan Direksi,SOP
+PERJANJIAN,Perjanjian,SOP
+NODIN,Nota Dinas,SOP
+SUKER,Surat Keterangan,SOP
+INFORMASI,Informasi,SOP
+UMUM,Umum,SOP
+SOP,SOP,TYPE
+ANGLEB,Angleb,TYPE
+EBOOK,EBook,TYPE

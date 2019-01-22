@@ -710,6 +710,11 @@ public class DateTimeFunction {
 		return result;
 	}
 	
+	public static boolean getStartGreaterThanEnd(Date start, Date end) {
+		boolean result = start.getTime() >= end.getTime() ? true : false;
+		return result;
+	}
+	
 	public static Date getDatePlus7Hour(Date change) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(change);
@@ -726,4 +731,27 @@ public class DateTimeFunction {
 		return cal.getTime();
 	}
 	
+	public static String getDatetimeDayFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("EEEEE, dd-MM-yyyy HH:mm:ss");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static String getDatetimeFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static String getDateFormatDisplay(Date date) {
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		String dateString = format.format(date);
+		return dateString;   
+	}
+	
+	public static Date getDatetimeFormat(Date date) throws Exception{
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		String dateString = format.format(date);
+		return format.parse(dateString);   
+	}
 }

@@ -29,6 +29,9 @@ public class HistoryDocumentEntity  implements Serializable {
 	
 	@Transient
 	private String nameDocument;
+
+	@Transient
+	private String readDateDisplay;
 	
 	@Transient
 	private String divisi;
@@ -39,6 +42,14 @@ public class HistoryDocumentEntity  implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getReadDateDisplay() {
+		return readDateDisplay;
+	}
+
+	public void setReadDateDisplay(String readDateDisplay) {
+		this.readDateDisplay = readDateDisplay;
 	}
 
 	public String getUsername() {

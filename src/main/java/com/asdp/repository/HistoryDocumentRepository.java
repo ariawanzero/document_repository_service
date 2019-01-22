@@ -7,4 +7,5 @@ import com.asdp.entity.HistoryDocumentEntity;
 
 public interface HistoryDocumentRepository  extends JpaSpecificationExecutor<HistoryDocumentEntity>, JpaRepository<HistoryDocumentEntity, String>{
 	HistoryDocumentEntity findByUsernameAndDocument(String username, String Document);
+	int countByDocument(String Document);
 }

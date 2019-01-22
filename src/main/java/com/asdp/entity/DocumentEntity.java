@@ -30,6 +30,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private String id;
 	private String name;
 	private String description;
+	private String descriptionNoTag;
 	private String type;
 	private String sop;
 	private String category;
@@ -39,6 +40,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private Date endDate;
 	private String nameFileJson;
 	private String status;
+	private String reason;
 	private boolean twitter = false;
 	private boolean facebook = false;
 	private boolean instagram = false;	
@@ -50,12 +52,57 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private String urlPreview;
 	@Transient
 	private int countRead;
+	@Transient
+	private String startDateDisplay;
+	@Transient
+	private String endDateDisplay;
+	@Transient
+	private String createdDateDisplay;
+	@Transient
+	private boolean view = false;
 	
 	public String getId() {
 		return id;
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getCreatedDateDisplay() {
+		return createdDateDisplay;
+	}
+	public void setCreatedDateDisplay(String createdDateDisplay) {
+		this.createdDateDisplay = createdDateDisplay;
+	}
+	public String getStartDateDisplay() {
+		return startDateDisplay;
+	}
+	public void setStartDateDisplay(String startDateDisplay) {
+		this.startDateDisplay = startDateDisplay;
+	}
+	public String getEndDateDisplay() {
+		return endDateDisplay;
+	}
+	public void setEndDateDisplay(String endDateDisplay) {
+		this.endDateDisplay = endDateDisplay;
+	}
+	public String getReason() {
+		return reason;
+	}
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+	public boolean isView() {
+		return view;
+	}
+	public void setView(boolean view) {
+		this.view = view;
+	}
+	public String getDescriptionNoTag() {
+		return descriptionNoTag;
+	}
+	public void setDescriptionNoTag(String descriptionNoTag) {
+		this.descriptionNoTag = descriptionNoTag;
 	}
 	public String getSop() {
 		return sop;
@@ -175,7 +222,9 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		public static final String ID_FIELD = "id";
 		public static final String NAME_FIELD = "name";
 		public static final String DESCRIPTION_FIELD = "description";
+		public static final String DESCRIPTION_NO_TAG_FIELD = "descriptionNoTag";
 		public static final String DIVISI_FIELD = "divisi";
+		public static final String STATUS_FIELD = "status";
 		public static final String START_DATE_FIELD = "startDate";
 		public static final String END_DATE_FIELD = "endDate";
 		public static final String TYPE_FIELD = "type";
@@ -183,6 +232,7 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		public static final String CATEGORY_FIELD = "category";
 		public static final String TUMBNAIL_FIELD = "tumbnail";
 		public static final String NAME_FILE_FIELD = "nameFile";
+		public static final String CREATED_BY_FIELD = "createdBy";
 		public static final String NAME_FILE_JSON_FIELD = "nameFileJson";
 		public static final String URL_PREVIEW_FIELD = "urlPreview";
 		public static final String JSON_FILTER = "jsonFilterDocument";
