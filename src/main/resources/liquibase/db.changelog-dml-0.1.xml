@@ -400,4 +400,18 @@
 			<where>code = 'Internship'</where>
 		</update>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-12" failOnError="true">
+		<update tableName="sys_menu">
+			<column  name="url" value="user/history"/>
+			<where>menu_code = 'HISTORYUSER'</where>
+		</update>
+		<update tableName="sys_menu">
+			<column  name="url" value="document/pending"/>
+			<where>menu_code = 'PENDINGAPPROVAL'</where>
+		</update>
+		<update tableName="sys_menu">
+			<column  name="url" value="document/history"/>
+			<where>menu_code = 'HISTORYDOCUMENT'</where>
+		</update>
+	</changeSet>
 </databaseChangeLog>
