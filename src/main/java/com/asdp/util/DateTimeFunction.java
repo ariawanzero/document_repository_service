@@ -732,13 +732,13 @@ public class DateTimeFunction {
 	}
 	
 	public static String getDatetimeDayFormatDisplay(Date date) {
-		SimpleDateFormat format = new SimpleDateFormat("EEEEE, HH:mm dd-MM-yyyy");
+		SimpleDateFormat format = new SimpleDateFormat("EEEEE, dd-MM-yyyy HH:mm:ss");
 		String dateString = format.format(date);
 		return dateString;   
 	}
 	
 	public static String getDatetimeFormatDisplay(Date date) {
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm dd-MM-yyyy");
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 		String dateString = format.format(date);
 		return dateString;   
 	}

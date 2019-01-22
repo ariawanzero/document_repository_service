@@ -250,6 +250,11 @@ public class QuizServiceImpl implements QuizService{
 			paging.getContent().stream().map(quiz -> {
 				ResultQuizEntity resultQuiz = resultQuizRepo.findByUsernameAndQuiz(users.getUsername(), quiz.getId());
 				quiz.setScore(resultQuiz.getScore());
+				if(quiz.getPassedScore() >= resultQuiz.getScore()) {
+					quiz.setPassQuiz("Pass");
+				}else {
+					quiz.setPassQuiz("Not Pass");
+				}
 				return quiz;
 			}).collect(Collectors.toList());
 		}else {
@@ -503,6 +508,11 @@ public class QuizServiceImpl implements QuizService{
 			QuizEntity quizEn = quiz.get();
 			resultQuiz.setQuizName(quizEn.getName());
 			resultQuiz.setEndDateQuiz(quizEn.getEndDate());
+			if(quizEn.getPassedScore() <= resultQuiz.getScore()) {
+				resultQuiz.setPassQuiz("Pass");
+			}else {
+				resultQuiz.setPassQuiz("Not Pass");
+			}
 			try {
 				resultQuiz.setQuestions(this.getListQuestions(resultQuiz.getQuestionAnswer()));
 			} catch (JsonParseException e) {
@@ -740,6 +750,13 @@ public class QuizServiceImpl implements QuizService{
 				record.add(user.getName());
 				record.add(user.getDivisi());
 				record.add(String.valueOf(data.getScore()));
+				Optional<QuizEntity> quizOp = quizRepo.findById(data.getQuiz());
+				QuizEntity quiz = quizOp.get();
+				if(quiz.getPassedScore() >= data.getScore()) {
+					record.add("Pass");
+				}else {
+					record.add("Not Pass");
+				}
 				try {
 					printer.printRecord(record);
 				} catch (IOException e) {

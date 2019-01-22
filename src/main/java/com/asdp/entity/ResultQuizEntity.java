@@ -48,6 +48,9 @@ public class ResultQuizEntity implements Serializable {
 	@Transient
 	private Date endDateQuiz;
 	
+	@Transient
+	private String passQuiz;
+	
 	private String questionAnswerJson;
 	
 	public String getId() {
@@ -55,6 +58,13 @@ public class ResultQuizEntity implements Serializable {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public String getPassQuiz() {
+		return passQuiz;
+	}
+	public void setPassQuiz(String passQuiz) {
+		this.passQuiz = passQuiz;
 	}
 	public String getQuizName() {
 		return quizName;

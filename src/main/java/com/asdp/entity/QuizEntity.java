@@ -63,6 +63,8 @@ public class QuizEntity extends AuditEntity implements Serializable {
 	private String startDateDisplay;
 	@Transient
 	private String endDateDisplay;
+	@Transient
+	private String passQuiz;
 
 	public String getId() {
 		return id;
@@ -70,6 +72,14 @@ public class QuizEntity extends AuditEntity implements Serializable {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getPassQuiz() {
+		return passQuiz;
+	}
+
+	public void setPassQuiz(String passQuiz) {
+		this.passQuiz = passQuiz;
 	}
 
 	public String getStartDateDisplay() {
