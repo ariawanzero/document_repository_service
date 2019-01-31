@@ -60,6 +60,8 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private String createdDateDisplay;
 	@Transient
 	private boolean view = false;
+	@Transient
+	private String descriptionNoTagShow;
 	
 	public String getId() {
 		return id;
@@ -68,6 +70,12 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 		this.id = id;
 	}
 	
+	public String getDescriptionNoTagShow() {
+		return descriptionNoTagShow;
+	}
+	public void setDescriptionNoTagShow(String descriptionNoTagShow) {
+		this.descriptionNoTagShow = descriptionNoTagShow;
+	}
 	public String getCreatedDateDisplay() {
 		return createdDateDisplay;
 	}

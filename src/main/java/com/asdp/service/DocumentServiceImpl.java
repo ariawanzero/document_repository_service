@@ -141,8 +141,6 @@ public class DocumentServiceImpl implements DocumentService {
 		UserEntity user = userRepo.findByUsername(users.getUsername());
 		boolean sendEmail = false;
 
-		
-		request.setDescriptionNoTag(null);
 		DocumentEntity toUpdate = request;
 		if (request == null || StringFunction.isEmpty(request.getName())) {
 			throw new UserException("400", "Document Name is mandatory !");
@@ -324,7 +322,6 @@ public class DocumentServiceImpl implements DocumentService {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 				list.add(criteriaBuilder.notEqual(root.get(DocumentEntity.Constant.STATUS_FIELD), StatusConstants.PENDING));
-				list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 			}
 
 
@@ -338,18 +335,7 @@ public class DocumentServiceImpl implements DocumentService {
 		paging.getContent().stream().map(doc -> {
 			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
-			if(doc.getDescriptionNoTag() != null) {
-				if(doc.getDescriptionNoTag().length() > 35) {
-					String docShow = doc.getDescriptionNoTag().substring(0, 35);
-					docShow = docShow + "...";
-					doc.setDescriptionNoTag(docShow);
-				}else {
-					String docShow = doc.getDescriptionNoTag();
-					docShow = docShow + "...";
-					doc.setDescriptionNoTag(docShow);
-				}
 
-			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
 				doc.setStatus(StatusConstants.EXPIRED);
@@ -359,6 +345,19 @@ public class DocumentServiceImpl implements DocumentService {
 				doc.setView(false);
 			}else {
 				doc.setView(true);
+			}
+
+			if(doc.getDescriptionNoTag() != null) {
+				if(doc.getDescriptionNoTag().length() > 35) {
+					String docShow = doc.getDescriptionNoTag().substring(0, 35);
+					docShow = docShow + "...";
+					doc.setDescriptionNoTagShow(docShow);
+				}else {
+					String docShow = doc.getDescriptionNoTag();
+					docShow = docShow + "...";
+					doc.setDescriptionNoTagShow(docShow);
+				}
+
 			}
 			doc.setStartDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getStartDate()));
 			doc.setEndDateDisplay(DateTimeFunction.getDateFormatDisplay(doc.getEndDate()));
@@ -436,11 +435,11 @@ public class DocumentServiceImpl implements DocumentService {
 			if(doc.getDescriptionNoTag().length() > 35) {
 				String docShow = doc.getDescriptionNoTag().substring(0, 35);
 				docShow = docShow + "...";
-				doc.setDescriptionNoTag(docShow);
+				doc.setDescriptionNoTagShow(docShow);
 			}else {
 				String docShow = doc.getDescriptionNoTag();
 				docShow = docShow + "...";
-				doc.setDescriptionNoTag(docShow);
+				doc.setDescriptionNoTagShow(docShow);
 			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
@@ -523,11 +522,11 @@ public class DocumentServiceImpl implements DocumentService {
 			if(doc.getDescriptionNoTag().length() > 35) {
 				String docShow = doc.getDescriptionNoTag().substring(0, 35);
 				docShow = docShow + "...";
-				doc.setDescriptionNoTag(docShow);
+				doc.setDescriptionNoTagShow(docShow);
 			}else {
 				String docShow = doc.getDescriptionNoTag();
 				docShow = docShow + "...";
-				doc.setDescriptionNoTag(docShow);
+				doc.setDescriptionNoTagShow(docShow);
 			}
 			if(DateTimeFunction.getTimeExpired(doc.getEndDate())){
 				doc.setValid(SystemConstant.ValidFlag.INVALID);
@@ -550,7 +549,7 @@ public class DocumentServiceImpl implements DocumentService {
 
 		return writer.writeValueAsString(restResponse);
 	}
-	
+
 	@Override
 	public String searchDetailDocumentHistory(DocumentRequest request) throws Exception {
 		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
@@ -573,13 +572,13 @@ public class DocumentServiceImpl implements DocumentService {
 			his.setUsername(user.getName());
 			return his;
 		}).collect(Collectors.toList());
-		
+
 		if(!StringFunction.isEmpty(request.getDivisi())){
-			 paging = PageableExecutionUtils.getPage(
-			    		paging.getContent().stream().filter(a -> a.getDivisi().equals(request.getDivisi()))
-						.collect(Collectors.toList()),
-						pageable,
-						paging::getTotalElements);
+			paging = PageableExecutionUtils.getPage(
+					paging.getContent().stream().filter(a -> a.getDivisi().equals(request.getDivisi()))
+					.collect(Collectors.toList()),
+					pageable,
+					paging::getTotalElements);
 		}
 
 
@@ -722,23 +721,14 @@ public class DocumentServiceImpl implements DocumentService {
 		BeanUtils.copyProperties(principal, users);
 		UserEntity user = userRepo.findByUsername(users.getUsername());
 
-		Pageable pageable;
+		Pageable pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
+					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
 
-		if(request.getName().equals("news")) {
-			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
-					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
-		}else if(request.getName().equals("popular")) {
-			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
-					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
-		}else {
-			pageable = pageUtil.generateDefaultPageRequest(request.getPage(),
-					new Sort(Sort.Direction.DESC, DocumentEntity.Constant.START_DATE_FIELD));
-		}
 
 		Specification<DocumentEntity> spec = (root, query, criteriaBuilder) -> {
 			List<Predicate> list = new ArrayList<>();
 
-			if (!StringFunction.isEmpty(request.getName()) && !request.getName().equals("new") && !request.getName().equals("popular")) {
+			if(!StringFunction.isEmpty(request.getName().trim())) {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DESCRIPTION_NO_TAG_FIELD)),
 						SystemConstant.WILDCARD + request.getName().toLowerCase() + SystemConstant.WILDCARD));
 			}
@@ -754,7 +744,10 @@ public class DocumentServiceImpl implements DocumentService {
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 			}
 
-			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
+			if(!request.getType().equals("All")) {
+				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.TYPE_FIELD)),
+						SystemConstant.WILDCARD + request.getType().toLowerCase() + SystemConstant.WILDCARD));
+			}
 
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};
@@ -764,63 +757,59 @@ public class DocumentServiceImpl implements DocumentService {
 		paging.getContent().stream().map(doc -> {
 			doc.setUrlPreview(UploadConstants.URL_PREVIEW.concat(OpenFileConstant.OPEN_CONTROLLER)
 					.concat(QuizConstant.PREVIEW_FILE_ADDR).concat("?name="));
-			if(!request.getName().equals("popular") && !request.getName().equals("new")) {
-				if(doc.getDescriptionNoTag() != null) {
-					String[] docShow = doc.getDescriptionNoTag().toLowerCase().split(request.getName().toLowerCase());
-					String docs;
-					if(docShow.length > 1) {
-						if(docShow[1].length()>350) {
-							docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
-						}else {
-							docs = "<b>"+request.getName()+"</b>".concat(" ");
-							String concats = "";
-							for(int i=1; i<docShow.length; i++) {
+			if(!StringFunction.isEmpty(request.getName().trim()) && doc.getDescriptionNoTag() != null) {
+				String[] docShow = doc.getDescriptionNoTag().toLowerCase().split(request.getName().toLowerCase());
+				String docs;
+				if(docShow.length > 1) {
+					if(docShow[1].length()>350) {
+						docs = "<b>"+request.getName()+"</b>".concat(" ").concat(docShow[1].substring(1, 350) + "...");
+					}else {
+						docs = "<b>"+request.getName()+"</b>".concat(" ");
+						String concats = "";
+						for(int i=1; i<docShow.length; i++) {
 
-								if(i == 1) {
-									concats = docShow[i].concat(" ").concat(docs);
+							if(i == 1) {
+								concats = docShow[i].concat(" ").concat(docs);
+							}
+							if(i > 1) {
+								int a = concats.length();
+								a = 350-a;
+								if(a == 0) {
+									break;
 								}
-								if(i > 1) {
-									int a = concats.length();
-									a = 350-a;
-									if(a == 0) {
-										break;
-									}
+								if(docShow[i].length() < a) {
+									concats = concats.concat(docShow[i].concat(" ").concat(docs));
+								}else if(docShow[i].length() > 0 && concats.length() < 350){
 									if(docShow[i].length() < a) {
-										concats = concats.concat(docShow[i].concat(" ").concat(docs));
-									}else if(docShow[i].length() > 0 && concats.length() < 350){
-										if(docShow[i].length() < a) {
-											concats = concats.concat(docShow[i].substring(0, a)).concat(" ").concat(docs);
-										}else {
-											concats = concats.concat(docShow[i].substring(0, a));
-										}
+										concats = concats.concat(docShow[i].substring(0, a)).concat(" ").concat(docs);
+									}else {
+										concats = concats.concat(docShow[i].substring(0, a));
 									}
 								}
 							}
-							docs = docs.concat(concats)+"...";
 						}
-					}else {
-						docs = doc.getDescriptionNoTag()+"...";
+						docs = docs.concat(concats)+"...";
 					}
-					doc.setDescriptionNoTag(docs);
+				}else {
+					docs = doc.getDescriptionNoTag()+"...";
 				}
+				doc.setDescriptionNoTagShow(docs);
 			}else {
 				if(doc.getDescriptionNoTag() != null) {
 					if(doc.getDescriptionNoTag().length() > 350) {
 						String docShow = doc.getDescriptionNoTag().substring(0, 350);
 						docShow = docShow + "...";
-						doc.setDescriptionNoTag(docShow);
+						doc.setDescriptionNoTagShow(docShow);
 					}else {
 						String docShow = doc.getDescriptionNoTag();
 						docShow = docShow + "...";
-						doc.setDescriptionNoTag(docShow);
+						doc.setDescriptionNoTagShow(docShow);
 					}
 
 				}
 			}
 
-			if(request.getName().equals("popular")) {
-				doc.setCountRead(historyDocumentRepo.countByDocument(doc.getId()));
-			}
+			doc.setCountRead(historyDocumentRepo.countByDocument(doc.getId()));
 			return doc;
 		}).collect(Collectors.toList());
 
