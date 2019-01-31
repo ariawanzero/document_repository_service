@@ -41,6 +41,9 @@ public class SystemParameterEntity implements Serializable {
 
 	public static class Constant {
 		private Constant() {}
+		public static final String CODE_FIELD = "code";
+		public static final String VALUE_FIELD = "value";
+		public static final String TYPE_FIELD = "type";
 		public static final String JSON_FILTER = "jsonFilterSystemParameter";
 	}
 	

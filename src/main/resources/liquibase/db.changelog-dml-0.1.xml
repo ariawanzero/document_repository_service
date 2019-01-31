@@ -414,4 +414,23 @@
 			<where>menu_code = 'HISTORYDOCUMENT'</where>
 		</update>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-13" failOnError="true">
+		<insert tableName="sys_menu">
+			<column name="menu_code" value="SYSPARAM"/>
+			<column name="menu_name" value="System Parameter"/>
+			<column name="url" value="sysparam"/>
+			<column name="parent" value="SYSPARAM"/>
+			<column name="created_by" value="system"/>
+			<column name="created_date" value="now()"/>
+		</insert>
+	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-14" failOnError="true">
+		<insert tableName="sys_menu_role">
+			<column name="id" value="26"/>
+			<column name="user_role" value="0"/>
+			<column name="menu" value="SYSPARAM"/>
+			<column name="created_by" value="system"/>
+			<column name="created_date" value="now()"/>
+		</insert>
+	</changeSet>
 </databaseChangeLog>

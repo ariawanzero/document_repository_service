@@ -141,6 +141,8 @@ public class DocumentServiceImpl implements DocumentService {
 		UserEntity user = userRepo.findByUsername(users.getUsername());
 		boolean sendEmail = false;
 
+		
+		request.setDescriptionNoTag(null);
 		DocumentEntity toUpdate = request;
 		if (request == null || StringFunction.isEmpty(request.getName())) {
 			throw new UserException("400", "Document Name is mandatory !");
@@ -177,7 +179,7 @@ public class DocumentServiceImpl implements DocumentService {
 				request.setStatus(toUpdate.getStatus());
 			}
 
-			BeanUtils.copyProperties(request, toUpdate);
+			BeanUtils.copyProperties(request, toUpdate, DocumentEntity.Constant.DESCRIPTION_NO_TAG_FIELD);
 
 			toUpdate.setModifiedBy(users.getUsername());
 			toUpdate.setModifiedDate(new Date());
@@ -322,9 +324,9 @@ public class DocumentServiceImpl implements DocumentService {
 				list.add(criteriaBuilder.like(criteriaBuilder.lower(root.<String>get(DocumentEntity.Constant.DIVISI_FIELD)),
 						SystemConstant.WILDCARD + user.getDivisi().toLowerCase() + SystemConstant.WILDCARD));
 				list.add(criteriaBuilder.notEqual(root.get(DocumentEntity.Constant.STATUS_FIELD), StatusConstants.PENDING));
+				list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 			}
 
-			list.add(criteriaBuilder.greaterThan(root.get(QuizEntity.Constant.END_DATE_FIELD), new Date()));
 
 			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
 		};

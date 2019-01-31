@@ -75,5 +75,7 @@ public class SystemRestConstant {
 		public static final String SYS_PARAM_CONTROLLER = "/sysparam";
 		public static final String FIND_PARAM_BY_TYPE_CONTROLLER = "/findParamByType";
 		public static final String SEARCH_PARAM_CONTROLLER = "/searchParam";
+		public static final String SAVE_PARAM_ADDR = "/saveParam";
+		public static final String FIND_PARAM_DETAIL_ADDR = "/findParamDetail";
 	}
 }
