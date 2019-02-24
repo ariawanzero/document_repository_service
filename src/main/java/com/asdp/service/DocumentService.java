@@ -17,4 +17,5 @@ public interface DocumentService {
 	String rejectedDocument(DocumentEntity request) throws Exception;
 	String searchDocumentHistory(DocumentRequest request) throws Exception;
 	String searchDetailDocumentHistory(DocumentRequest request) throws Exception;
+	String countHistoryDocumentToday() throws Exception;
 }

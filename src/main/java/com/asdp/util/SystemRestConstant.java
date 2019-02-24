@@ -12,6 +12,7 @@ public class SystemRestConstant {
 		public static final String SEARCH_HISTORY_LOGIN_ADDR = "/searchHistoryLogin";
 		public static final String CHANGE_PASSWORD_ADDR = "/changePassword";
 		public static final String SAVE_USER_AUTH = "SAVE_PRE_SCREENING";
+		public static final String COUNT_HISTORY_LOGIN_ADDR = "/countTodayLogin";
 	}
 	
 	public static final class QuizConstant {

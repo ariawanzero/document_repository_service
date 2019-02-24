@@ -40,6 +40,11 @@ public class UserController {
 		return userService.searchHistoryLoginUsers(request);
 	}
 	
+	@PostMapping(SystemRestConstant.UserConstant.COUNT_HISTORY_LOGIN_ADDR)
+	public String searchHistoryLogin() throws Exception {				
+		return userService.countHistoryLoginUsers();
+	}
+	
 	@PostMapping(SystemRestConstant.UserConstant.CHANGE_PASSWORD_ADDR)
 	public String changePassword(@RequestBody ChangePasswordRequest request) throws Exception {				
 		return userService.changePassword(request);

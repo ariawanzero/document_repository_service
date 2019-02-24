@@ -74,5 +74,10 @@ public class DocumentController {
 	public String dashboardSearch(@RequestBody DocumentRequest request) throws Exception {
 		return documentService.searchDocumentAdvanced(request);
 	}
+	
+	@PostMapping(SystemRestConstant.UserConstant.COUNT_HISTORY_LOGIN_ADDR)
+	public String countHistoryDocumentToday() throws Exception {				
+		return documentService.countHistoryDocumentToday();
+	}
 
 }

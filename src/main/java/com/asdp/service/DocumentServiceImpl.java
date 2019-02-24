@@ -3,6 +3,7 @@ package com.asdp.service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -236,6 +237,40 @@ public class DocumentServiceImpl implements DocumentService {
 		return writter.writeValueAsString(response);
 	}
 
+	@Override
+	public String countHistoryDocumentToday() throws Exception {
+		Specification<HistoryDocumentEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+			
+				Calendar calStart = Calendar.getInstance();
+				calStart.setTime(new Date());
+				calStart.set(Calendar.HOUR_OF_DAY,00);
+				calStart.set(Calendar.MINUTE,00);
+				calStart.set(Calendar.SECOND,0);
+				
+				Calendar calEnd = Calendar.getInstance();
+				calEnd.setTime(new Date());
+				calEnd.set(Calendar.HOUR_OF_DAY,23);
+				calEnd.set(Calendar.MINUTE,59);
+				calEnd.set(Calendar.SECOND,59);
+				
+				list.add(criteriaBuilder.between(root.get(HistoryDocumentEntity.Constant.READ_DOCUMENT_FIELD), calStart.getTime(), calEnd.getTime()));
+			
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+		List<HistoryDocumentEntity> historyCount = historyDocumentRepo.findAll(spec);
+		  
+		DocumentEntity document = new DocumentEntity();
+		document.setCountHist(historyCount.size());
+		
+		CommonResponse<DocumentEntity> response = new CommonResponse<>(document);
+		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER),
+				new JsonFilter(DocumentEntity.Constant.JSON_FILTER, QuizEntity.Constant.NAME_FILE_JSON_FIELD));
+
+		return writter.writeValueAsString(response);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public String readDocumentDetail(String id) throws Exception {

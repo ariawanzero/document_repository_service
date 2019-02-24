@@ -51,7 +51,15 @@ public class UserEntity extends AuditEntity implements Serializable {
 	private String status;
 	@Transient
 	private String expiredDateDisplay;
+	@Transient
+	private int countHist;
 	
+	public int getCountHist() {
+		return countHist;
+	}
+	public void setCountHist(int countHist) {
+		this.countHist = countHist;
+	}
 	public String getPosition() {
 		return position;
 	}

@@ -346,6 +346,41 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 		return writer.writeValueAsString(restResponse);
 	}
+	
+	@Override
+	public String countHistoryLoginUsers() throws Exception {
+		Specification<HistoryLoginEntity> spec = (root, query, criteriaBuilder) -> {
+			List<Predicate> list = new ArrayList<>();
+			
+				Calendar calStart = Calendar.getInstance();
+				calStart.setTime(new Date());
+				calStart.set(Calendar.HOUR_OF_DAY,00);
+				calStart.set(Calendar.MINUTE,00);
+				calStart.set(Calendar.SECOND,0);
+				
+				Calendar calEnd = Calendar.getInstance();
+				calEnd.setTime(new Date());
+				calEnd.set(Calendar.HOUR_OF_DAY,23);
+				calEnd.set(Calendar.MINUTE,59);
+				calEnd.set(Calendar.SECOND,59);
+				
+				list.add(criteriaBuilder.between(root.get(HistoryLoginEntity.Constant.DATE_LOGIN_FIELD), calStart.getTime(), calEnd.getTime()));
+			
+			return criteriaBuilder.and(list.toArray(new Predicate[] {}));
+		};
+		List<HistoryLoginEntity> historyCount = hisRepo.findAll(spec);
+		  
+		UserEntity user = new UserEntity();
+		user.setCountHist(historyCount.size());
+		
+		CommonResponse<UserEntity> response = new CommonResponse<>(user);
+		ObjectWriter writter = JsonUtil.generateJsonWriterWithFilter(
+				new JsonFilter(UserEntity.Constant.JSON_FILTER),
+				new JsonFilter(UserEntity.Constant.JSON_FILTER, UserEntity.Constant.USER_ROLE_FIELD, UserEntity.Constant.PASSWORD_FIELD),
+				new JsonFilter(UserEntity.Constant.EXPIRED_DATE_FIELD));
+
+		return writter.writeValueAsString(response);
+	}
 
 	@Override
 	public String changePassword(ChangePasswordRequest request) throws Exception {
@@ -374,7 +409,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		UserEntity user = userRepo.findByUsername(request.getUsername());
 		
 		if(user == null) {
-			new UserException("400", "User not found");
+			throw new UserException("400", "User not found");
 		}
 
 		String password = StringFunction.randomAlphaNumeric(7);

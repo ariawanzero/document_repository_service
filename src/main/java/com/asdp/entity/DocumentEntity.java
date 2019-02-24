@@ -62,7 +62,15 @@ public class DocumentEntity extends AuditEntity implements Serializable {
 	private boolean view = false;
 	@Transient
 	private String descriptionNoTagShow;
+	@Transient
+	private int countHist;
 	
+	public int getCountHist() {
+		return countHist;
+	}
+	public void setCountHist(int countHist) {
+		this.countHist = countHist;
+	}
 	public String getId() {
 		return id;
 	}
