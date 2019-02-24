@@ -433,4 +433,13 @@
 			<column name="created_date" value="now()"/>
 		</insert>
 	</changeSet>
+	<changeSet author="Septa" id="dml-0.0-15" failOnError="true">
+		<insert tableName="sys_email">
+			<column name="email_code" value="FORGOTPASSWORD" />
+			<column name="subject" value="Your request forgot password infoASDP" />
+			<column name="body_message" >
+				<![CDATA[ <html> <body><h3>Hi %s,</h3><p>Your account password already change!<br/>New Password : %s<br/>Please change your password for security privacy<br/><h3>Thanks, <br/>Regards,<br/>Admin infoASDP</h3></p></body></html> ]]>
+			</column>
+		</insert>
+	</changeSet>
 </databaseChangeLog>

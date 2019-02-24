@@ -12,4 +12,5 @@ public interface UserService {
 	
 	String searchHistoryLoginUsers(HistoryLoginRequest request)throws Exception;
 	String changePassword(ChangePasswordRequest request)throws Exception;
+	String forgotPassword(ChangePasswordRequest request)throws Exception;
 }

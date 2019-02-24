@@ -368,4 +368,23 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
 		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
 	}
+	
+	@Override
+	public String forgotPassword(ChangePasswordRequest request) throws Exception {
+		UserEntity user = userRepo.findByUsername(request.getUsername());
+		
+		if(user == null) {
+			new UserException("400", "User not found");
+		}
+
+		String password = StringFunction.randomAlphaNumeric(7);
+		user.setPassword(PasswordUtils.encryptPassword(password));
+		userRepo.save(user);
+		
+		Optional<EmailEntity> email = emailRepo.findById("FORGOTPASSWORD");
+		EmailUtils.sendEmail(user.getUsername(), String.format(email.get().getBodyMessage(), user.getName(), password), email.get().getSubject());
+		
+		CommonResponse<String> response = comGen.generateCommonResponse(SystemConstant.SUCCESS);
+		return JsonUtil.generateDefaultJsonWriter().writeValueAsString(response);
+	}
 }
