@@ -125,7 +125,7 @@ public class QuizServiceImpl implements QuizService{
 		}
 
 		try {
-			String name = en.getName()
+			String name = en.getName().replaceAll(" ", "_")
 					.concat("-")
 					.concat(String.valueOf(fileName.size() + 1))
 					.concat(".")
@@ -384,7 +384,7 @@ public class QuizServiceImpl implements QuizService{
 			try {
 				Resource source = this.download(file);
 				File files = source.getFile();
-				String name = nameQuiz
+				String name = nameQuiz.replaceAll(" ", "_")
 						.concat("-")
 						.concat(String.valueOf(i + 1))
 						.concat(".")

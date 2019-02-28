@@ -111,7 +111,7 @@ public class DocumentServiceImpl implements DocumentService {
 		}
 
 		try {
-			String name = en.getName()
+			String name = en.getName().replaceAll(" ", "_")
 					.concat("-")
 					.concat(String.valueOf(fileName.size() + 1))
 					.concat(".")
@@ -286,14 +286,16 @@ public class DocumentServiceImpl implements DocumentService {
 
 		if(!document.getStatus().equals(StatusConstants.PENDING) && !document.getStatus().equals(StatusConstants.REJECTED) 
 				&& !user.getUsername().equals("superuser")) {
-			HistoryDocumentEntity hisDocument = historyDocumentRepo.findByUsernameAndDocument(user.getUsername(), id);
-			if(hisDocument==null) {
-				hisDocument = new HistoryDocumentEntity();
-				hisDocument.setUsername(user.getUsername());
-				hisDocument.setDocument(id);
-				hisDocument.setReadDocument(new Date());
-				historyDocumentRepo.save(hisDocument);
-				historyDocumentRepo.flush();
+			synchronized (this) {
+				HistoryDocumentEntity hisDocument = historyDocumentRepo.findByUsernameAndDocument(user.getUsername(), id);
+				if(hisDocument==null) {
+					hisDocument = new HistoryDocumentEntity();
+					hisDocument.setUsername(user.getUsername());
+					hisDocument.setDocument(id);
+					hisDocument.setReadDocument(new Date());
+					historyDocumentRepo.save(hisDocument);
+					historyDocumentRepo.flush();
+				}
 			}
 		}
 		document.setCountRead(historyDocumentRepo.countByDocument(id));
@@ -693,7 +695,7 @@ public class DocumentServiceImpl implements DocumentService {
 			try {
 				Resource source = this.download(file);
 				File files = source.getFile();
-				String name = nameQuiz
+				String name = nameQuiz.replaceAll(" ", "_")
 						.concat("-")
 						.concat(String.valueOf(i + 1))
 						.concat(".")
